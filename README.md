@@ -4,109 +4,72 @@ WatchNext is a modern, full-stack web application designed to help users track t
 
 ---
 
+## Project Dashboard
+
+**Status:** `In Development` 🟡
+
+### Current Phase: Phase 1 - Frontend Setup & API Connection
+
+### To-Do List & Development Log
+
+**Phase 0: Foundation & Setup (Completed ✅)**
+- [x] Chose project architecture (Decoupled MERN stack)
+- [x] Set up monorepo with `/frontend` and `/backend` folders
+- [x] Created GitHub repository
+- [x] Acquired TMDB API Key
+- [x] Set up free MongoDB Atlas cluster
+
+**Phase 1: The "Look and Feel" (In Progress ⏳)**
+- [ ] Initialize frontend project in `/frontend` with Vite and pnpm
+- [ ] Install core frontend dependencies: `axios`, `react-router-dom`
+- [ ] Set up Tailwind CSS for styling
+- [ ] Create static UI components (`Navbar`, `SearchBar`, `ResultsGrid`, `ShowCard`)
+- [ ] Implement the search functionality to call the TMDB API directly from the frontend
+- [ ] Store the TMDB API Key securely in a `.env` file
+- [ ] Display search results dynamically in the `ResultsGrid`
+
+**Phase 2: The "Engine Room" (Upcoming ⏩)**
+- [ ] Initialize backend project in `/backend` with pnpm
+- [ ] Install backend dependencies (`express`, `mongoose`, `jsonwebtoken`, `bcryptjs`, `cors`, `dotenv`)
+- [ ] Define Mongoose schemas for `User` and `WatchedItem`
+- [ ] Connect server to MongoDB Atlas
+- [ ] Build user registration and login API endpoints
+
+---
+
 ## Live Demo
 
 **[Link to your deployed application]** (e.g., watchnext.vercel.app)
 
 ---
 
-## Screenshot
-
-
-*A preview of the main user dashboard, showcasing the personalized "What's Next" lists.*
-
----
-
 ## Features
 
-* **Full User Authentication:** Secure user registration and login using JWT (JSON Web Tokens) for session management.
-* **Comprehensive Media Search:** Instant search functionality powered by the TMDB API to find any movie or TV show.
-* **Personalized Watch Lists:** Log movies and specific TV show seasons to a personal, persistent "watched" library.
-* **Dynamic "What's Next" Dashboard:** The core of the application, which automatically tells users:
-    * When a new season of a watched show has been released.
-    * Which shows they can continue watching.
-    * When a sequel to a watched movie is available.
-* **"Memory Cache" (Planned):** A unique feature to add personal plot notes after finishing a season to remember key details for the future.
-* **"Binge Calculator" (Planned):** A smart feature to calculate the total time required to catch up on unwatched seasons of a show.
+* **Full User Authentication:** Secure user registration and login using JWT (JSON Web Tokens).
+* **Comprehensive Media Search:** Instant search powered by the TMDB API.
+* **Personalized Watch Lists:** Log movies and specific TV show seasons.
+* **Dynamic "What's Next" Dashboard:** Automatically shows new seasons, sequels, and shows to continue.
 
 ---
 
-## Tech Stack & Architecture
+## Tech Stack & Architectural Decisions
 
-WatchNext is built on a decoupled client-server architecture. The React frontend is a Single-Page Application (SPA) that communicates with a backend REST API built with Node.js and Express.
+### Core Technologies
+* **Frontend:** React, Vite, Axios, Tailwind CSS
+* **Backend:** Node.js, Express.js, Mongoose
+* **Database:** MongoDB Atlas
+* **Deployment:** Vercel (Frontend), Render (Backend)
+* **Package Manager:** pnpm (Chosen for speed and disk space efficiency)
 
-* **Frontend:**
-    * **React 18**
-    * **Vite** (Build Tool)
-    * **Axios** (HTTP Client)
-    * **Tailwind CSS** (Styling)
-
-* **Backend:**
-    * **Node.js**
-    * **Express.js** (Web Framework)
-    * **Mongoose** (ODM for MongoDB)
-    * **JSON Web Token (JWT)** (Authentication)
-    * **bcrypt.js** (Password Hashing)
-
-* **Database:**
-    * **MongoDB Atlas** (Cloud-hosted NoSQL Database)
-
-* **Deployment:**
-    * **Vercel** (for Frontend)
-    * **Render** (for Backend)
+### Architectural Decisions Log
+* **Architecture: Decoupled (Headless)**
+    * **Reason:** Chosen over an integrated framework like Next.js to explicitly demonstrate skills in building a standalone REST API and a separate frontend client, which are core competencies for full-stack roles.
+* **Database: NoSQL (MongoDB)**
+    * **Reason:** Selected for its flexible, JSON-like document structure which aligns well with JavaScript and the MERN stack. Mongoose provides schema validation for a more structured approach.
 
 ---
 
 ## Getting Started
 
-To get a local copy up and running, follow these simple steps.
-
-### Prerequisites
-
-Ensure you have the following installed on your local machine:
-* Node.js (LTS version recommended)
-* npm (comes with Node.js)
-* Git
-
-### Installation & Setup
-
-1.  **Clone the repository:**
-    ```sh
-    git clone [https://github.com/niloy-saha-123/WatchNext.git](https://github.com/niloy-saha-123/WatchNext.git)
-    cd WatchNext
-    ```
-
-2.  **Setup the Backend Server:**
-    * Navigate to the server directory and install dependencies.
-        ```sh
-        cd server
-        npm install
-        ```
-    * Create a `.env` file in the `server` directory. See the Environment Variables section below for the required variables.
-
-3.  **Setup the Frontend Client:**
-    * From the root directory, navigate to the client directory and install dependencies.
-        ```sh
-        cd ../client
-        npm install
-        ```
-    * Create a `.env` file in the `client` directory. See the Environment Variables section below.
-
-4.  **Run the Application:**
-    * Start the backend server (from the `server` directory):
-        ```sh
-        npm run dev
-        ```
-    * In a separate terminal, start the frontend development server (from the `client` directory):
-        ```sh
-        npm run dev
-        ```
-    * Open your browser and navigate to `http://localhost:5173` (or the port specified by Vite).
-
----
-
-## Environment Variables
-
-To run this project, you will need to add the following environment variables to your `.env` files. Create a `.env` file in both the `/client` and `/server` directories.
-
-**Server (`/server/.env`):**
+To get a local copy up and running, follow these simple steps...
+*(The rest of your setup instructions remain the same)*
