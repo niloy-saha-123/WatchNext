@@ -1,0 +1,34 @@
+{
+  "hash": "7ab5b6a7",
+  "configHash": "0d2c7e40",
+  "lockfileHash": "635e82fa",
+  "browserHash": "380439bc",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/.pnpm/react@19.1.1/node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "1786dbd0",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/.pnpm/react-dom@19.1.1_react@19.1.1/node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "d1ff07ac",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/.pnpm/react-router-dom@7.9.1_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "56e0b6da",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-OJ62L3QZ": {
+      "file": "chunk-OJ62L3QZ.js"
+    },
+    "chunk-VGEAULOC": {
+      "file": "chunk-VGEAULOC.js"
+    }
+  }
+}
