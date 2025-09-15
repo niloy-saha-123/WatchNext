@@ -1,6 +1,6 @@
 /**
  * @file Footer.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/Footer.jsx
+ * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/common/Footer.jsx
  * @description This component renders the main footer for the application.
  * It's designed to be simple, clean, and provide essential information
  * like copyright and a link to the project's source code.

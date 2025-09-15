@@ -1,13 +1,14 @@
 /**
  * @file HeroSection.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/HeroSection.jsx
+ * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/sections/HeroSection.jsx
  * @description This is the main "above the fold" content for the landing page.
  * It's designed to grab the user's attention with a strong headline
  * and a clear call-to-action, all set against the dynamic poster grid.
  */
 import React from 'react';
-import Button from './Button';
-import AnimatedPosterGrid from './AnimatedPosterGrid';
+import { Link } from 'react-router-dom';
+import { Button } from '../common';
+import { AnimatedPosterGrid } from '.';
 
 function HeroSection() {
   return (
@@ -23,9 +24,11 @@ function HeroSection() {
           WatchNext is your personal, automated tracker for every movie and series you love. Log what you've seen, and we'll tell you what's next.
         </p>
         <div className="pt-6">
-          <Button onClick={() => console.log('Navigate to Auth Page')} variant="primary">
-            Get Started for Free
-          </Button>
+          <Link to="/signup">
+            <Button variant="primary">
+              Get Started for Free
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 /**
  * @file WhyJoinSection.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/WhyJoinSection.jsx
+ * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/sections/WhyJoinSection.jsx
  * @description This component explains the key benefits and features of WatchNext
  * to convince users to sign up. It's placed after the hero section
  * to provide more detailed information about the service.

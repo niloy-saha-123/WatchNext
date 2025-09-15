@@ -1,15 +1,13 @@
 /**
  * @file HomePage.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/pages/HomePage.jsx
+ * @path /frontend/src/pages/HomePage.jsx
  * @description This component serves as the main landing page for unauthenticated users.
  * It assembles the various sections (Header, Hero, WhyJoin, Footer)
  * to create a complete, cohesive page.
  */
 import React from 'react';
-import Header from '../components/Header';
-import HeroSection from '../components/HeroSection';
-import WhyJoinSection from '../components/WhyJoinSection';
-import Footer from '../components/Footer';
+import { Header, Footer } from '../components/common';
+import { HeroSection, WhyJoinSection } from '../components/sections';
 
 
 function HomePage() {

@@ -1,6 +1,6 @@
 /**
  * @file Button.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/Button.jsx
+ * @path /frontend/src/components/common/Button.jsx
  * @description A reusable, styled button component with support for different variants.
  * Updated to match the red-orange-purple gradient theme.
  */

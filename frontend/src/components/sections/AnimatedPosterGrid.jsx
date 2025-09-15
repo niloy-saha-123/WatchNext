@@ -1,6 +1,6 @@
 /**
  * @file AnimatedPosterGrid.jsx
- * @path /frontend/src/components/AnimatedPosterGrid.jsx
+ * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/sections/AnimatedPosterGrid.jsx
  * @description This component creates a true infinite scrolling poster carousel with two rows.
  * Top row scrolls right, bottom row scrolls left. Uses CSS transforms for seamless looping.
  * No visible restart or jerking - continuous merry-go-round effect.
