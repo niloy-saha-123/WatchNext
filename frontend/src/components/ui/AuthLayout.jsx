@@ -1,6 +1,6 @@
 /**
  * @file AuthLayout.jsx
- * @path /frontend/src/components/layout/AuthLayout.jsx
+ * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/ui/AuthLayout.jsx
  * @description Reusable layout component for authentication pages.
  * Features a centered design with the minimalist red theme and gradient background.
  */
@@ -9,17 +9,17 @@ import { Link } from 'react-router-dom';
 
 function AuthLayout({ children, title, subtitle }) {
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-red-500 via-orange-500 via-purple-600 to-blue-900">
+    <div className="min-h-screen relative bg-gradient-to-br from-red-500 via-orange-500 to-purple-600">
       {/* Light overlay for consistency with homepage */}
       <div className="absolute inset-0 bg-slate-900/25 z-0"></div>
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 pt-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md space-y-8">
           {/* Logo Header */}
           <div className="text-center">
             <Link to="/" className="inline-block">
               <h1 className="text-4xl font-black text-white hover:text-orange-400 transition-all duration-300 tracking-tight">
-                <span className="text-white">
+                <span className="bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent">
                   Watch
                 </span>
                 <span className="text-white">

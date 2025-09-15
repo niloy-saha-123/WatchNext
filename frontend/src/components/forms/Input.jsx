@@ -5,6 +5,7 @@
  * Designed with the minimalist red theme to match the application aesthetic.
  */
 import React from 'react';
+import { LoadingSpinner } from '../common';
 
 function Input({ 
   type = 'text', 
@@ -15,7 +16,9 @@ function Input({
   error = '',
   label,
   id,
-  className = ''
+  className = '',
+  name,
+  loading = false
 }) {
   const inputStyles = `
     w-full px-4 py-3 
@@ -36,17 +39,28 @@ function Input({
           {required && <span className="text-red-400 ml-1">*</span>}
         </label>
       )}
-      <input
-        type={type}
-        id={id}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        className={inputStyles}
-      />
+      <div className="relative">
+        <input
+          type={type}
+          id={id}
+          name={name}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          required={required}
+          className={inputStyles}
+          aria-describedby={error ? `${id}-error` : undefined}
+          aria-invalid={error ? 'true' : 'false'}
+          disabled={loading}
+        />
+        {loading && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <LoadingSpinner size="small" variant="slate" />
+          </div>
+        )}
+      </div>
       {error && (
-        <p className="text-sm text-red-400 mt-1">{error}</p>
+        <p id={`${id}-error`} className="text-sm text-red-400 mt-1" role="alert">{error}</p>
       )}
     </div>
   );

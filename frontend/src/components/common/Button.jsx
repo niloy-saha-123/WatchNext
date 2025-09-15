@@ -6,7 +6,16 @@
  */
 import React from 'react';
 
-function Button({ children, onClick, variant = 'primary' }) {
+function Button({ 
+  children, 
+  onClick, 
+  variant = 'primary', 
+  disabled = false, 
+  loading = false, 
+  type = 'button',
+  className = '',
+  ...props 
+}) {
   // Base styles are common to all button variants
   const baseStyles = "px-6 py-3 font-semibold rounded-lg transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent";
   
@@ -18,10 +27,23 @@ function Button({ children, onClick, variant = 'primary' }) {
 
   return (
     <button 
-      className={`${baseStyles} ${variantStyles[variant]}`}
+      type={type}
+      className={`${baseStyles} ${variantStyles[variant]} ${className} ${
+        disabled || loading ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
       onClick={onClick}
+      disabled={disabled || loading}
+      aria-busy={loading}
+      {...props}
     >
-      {children}
+      {loading ? (
+        <div className="flex items-center justify-center space-x-2">
+          <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          <span>Loading...</span>
+        </div>
+      ) : (
+        children
+      )}
     </button>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * @file WhyJoinSection.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/sections/WhyJoinSection.jsx
+ * @path /frontend/src/components/sections/WhyJoinSection.jsx
  * @description This component explains the key benefits and features of WatchNext
  * to convince users to sign up. It's placed after the hero section
  * to provide more detailed information about the service.
@@ -9,7 +9,7 @@ import React from 'react';
 
 function WhyJoinSection() {
   return (
-    <section className="py-20">
+    <section className="pt-80 pb-20">
       <div className="container mx-auto px-4">
         <div className="text-left mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -26,7 +26,7 @@ function WhyJoinSection() {
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Effortless Progress Tracking</h3>
             <p className="text-slate-300 text-sm">
-              Never forget which season you finished - simple, elegant viewing history for movies and TV seasons.
+              Never forget which season you finished - simple, elegant viewing history for movies and TV shows.
             </p>
           </div>
           
@@ -39,7 +39,7 @@ function WhyJoinSection() {
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Automated Discovery</h3>
             <p className="text-slate-300 text-sm">
-              Instantly see when new seasons or sequels are released - the app does the work for you.
+              Instantly get notified when new seasons or sequels are released - the app does the work for you.
             </p>
           </div>
           

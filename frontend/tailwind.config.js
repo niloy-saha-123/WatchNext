@@ -16,20 +16,20 @@ export default {
         'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         'brand': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
-      // Register the custom animations so they can be used as utility classes
+      // Register the custom animations using CodePen pattern
       animation: {
-        'marquee-left': 'marquee-left 60s linear infinite',
-        'marquee-right': 'marquee-right 60s linear infinite',
+        'scroll': 'scroll 60s linear infinite',
+        'scroll-reverse': 'scroll-reverse 60s linear infinite',
       },
-      // Define the keyframes for the animations to be used by the animation utility
+      // Define the keyframes using CodePen pattern
       keyframes: {
-        'marquee-left': {
-          '0%': { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-50%)' },
+        'scroll': {
+          'from': { transform: 'translateX(0)' },
+          'to': { transform: 'translateX(-100%)' },
         },
-        'marquee-right': {
-          '0%': { transform: 'translateX(-50%)' },
-          '100%': { transform: 'translateX(0%)' },
+        'scroll-reverse': {
+          'from': { transform: 'translateX(-100%)' },
+          'to': { transform: 'translateX(0)' },
         },
       }
     },

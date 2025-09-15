@@ -109,7 +109,7 @@ function SignupPage() {
       console.log('Signup attempt:', formData);
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // For now, just log success
       alert('Signup functionality will be implemented with backend!');
@@ -228,10 +228,10 @@ function SignupPage() {
         <Button 
           type="submit" 
           variant="primary" 
-          disabled={isLoading}
+          loading={isLoading}
           className="w-full"
         >
-          {isLoading ? 'Creating Account...' : 'Create Account'}
+          Create Account
         </Button>
 
         <div className="text-center">

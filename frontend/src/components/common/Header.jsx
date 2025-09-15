@@ -27,14 +27,14 @@ function Header() {
         </Link>
 
         {/* Action Buttons */}
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-4" role="navigation" aria-label="Main navigation">
           <Link to="/login">
-            <Button variant="secondary">
+            <Button variant="secondary" aria-label="Sign in to your account">
               Login
             </Button>
           </Link>
           <Link to="/signup">
-            <Button variant="primary">
+            <Button variant="primary" aria-label="Create a new account">
               Sign Up
             </Button>
           </Link>

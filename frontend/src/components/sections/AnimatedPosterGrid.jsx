@@ -1,69 +1,153 @@
 /**
  * @file AnimatedPosterGrid.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/sections/AnimatedPosterGrid.jsx
+ * @path /frontend/src/components/sections/AnimatedPosterGrid.jsx
  * @description This component creates a true infinite scrolling poster carousel with two rows.
- * Top row scrolls right, bottom row scrolls left. Uses CSS transforms for seamless looping.
+ * Top row scrolls right, bottom row scrolls left. Uses real TMDB data for movie and TV show posters.
  * No visible restart or jerking - continuous merry-go-round effect.
  */
-import React from 'react';
-
-// Generate movie data for the carousel
-const generateMovies = () => {
-  const movieTitles = [
-    'Oppenheimer', 'Inception', 'Interstellar', 'The Matrix', 'Gladiator',
-    'Pulp Fiction', 'Parasite', 'Spider-Man', 'Top Gun', 'Dune',
-    'Avatar', 'Titanic', 'The Dark Knight', 'Avengers', 'Iron Man',
-    'Black Panther', 'Wonder Woman', 'Joker', 'Frozen', 'Moana'
-  ];
-  
-  return movieTitles.map((title, index) => ({
-    id: index,
-    title: title,
-  }));
-};
-
-const movies = generateMovies();
+import React, { useState, useEffect } from 'react';
+import { getFeaturedContent, formatPosterGridData } from '../../utils/movieData';
+import { getImageUrl } from '../../services/tmdbApi';
+import { LoadingSpinner } from '../common';
 
 function AnimatedPosterGrid() {
-  // Simple single set of movies for each row
-  const topRowMovies = movies.slice(0, 10);
-  const bottomRowMovies = movies.slice(10, 20);
+  const [content, setContent] = useState({ topRow: [], bottomRow: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  return (
-    <div className="absolute inset-0 z-0 overflow-hidden">
-      {/* Container for both rows with proper spacing and positioning */}
-      <div className="h-full flex flex-col justify-center py-16 pt-24">
-        {/* Top Row - scrolls right */}
-        <div className="h-[40rem] mb-3 overflow-hidden relative">
-          <div className="animate-marquee-right whitespace-nowrap flex">
-            {/* Seamless infinite loop without gaps */}
-            <div className="flex space-x-3 animate-marquee-right">
-              {[...topRowMovies, ...topRowMovies].map((movie, index) => (
-                <div key={`top-${index}`} className="flex-shrink-0 w-72 h-[40rem]">
-                  <div className="w-full h-full bg-slate-700/20 border border-slate-600/20">
-                  </div>
-                </div>
-              ))}
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        setLoading(true);
+        const data = await getFeaturedContent();
+        const formattedData = formatPosterGridData(data.movies, data.tvShows);
+        setContent(formattedData);
+      } catch (err) {
+        console.error('Error loading movie data:', err);
+        setError(err.message);
+        // Use fallback static data if API fails
+        const fallbackData = {
+          topRow: Array(10).fill(null).map((_, index) => ({
+            id: `fallback-top-${index}`,
+            title: `Movie ${index + 1}`,
+            posterPath: null,
+            type: 'movie'
+          })),
+          bottomRow: Array(10).fill(null).map((_, index) => ({
+            id: `fallback-bottom-${index}`,
+            title: `TV Show ${index + 1}`,
+            posterPath: null,
+            type: 'tv'
+          }))
+        };
+        setContent(fallbackData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadContent();
+  }, []);
+
+  // Render poster item
+  const renderPoster = (item, index, prefix) => {
+    const posterUrl = item.posterPath ? getImageUrl(item.posterPath, 'w342') : null;
+    
+    return (
+      <div key={`${prefix}-${index}`} className="flex-shrink-0 w-[342px] h-[513px]">
+        {posterUrl ? (
+          <img 
+            src={posterUrl} 
+            alt={item.title}
+            className="w-full h-full object-contain opacity-20"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-slate-700/10">
+            <div className="text-center p-4">
+              <div className="text-4xl mb-2">🎬</div>
+              <p className="text-white font-medium text-sm">{item.title}</p>
+              <p className="text-slate-400 text-xs mt-1">{item.type === 'movie' ? 'Movie' : 'TV Show'}</p>
             </div>
           </div>
-        </div>
+        )}
+      </div>
+    );
+  };
 
-        {/* Bottom Row - scrolls left */}
-        <div className="h-[40rem] overflow-hidden relative">
-          <div className="animate-marquee-left whitespace-nowrap flex">
-            {/* Seamless infinite loop without gaps */}
-            <div className="flex space-x-3 animate-marquee-left">
-              {[...bottomRowMovies, ...bottomRowMovies].map((movie, index) => (
-                <div key={`bottom-${index}`} className="flex-shrink-0 w-72 h-[40rem]">
-                  <div className="w-full h-full bg-slate-700/20 border border-slate-600/20">
-                  </div>
-                </div>
-              ))}
-            </div>
+  if (loading) {
+    return (
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="h-full flex items-center justify-center">
+          <LoadingSpinner 
+            size="xl" 
+            variant="secondary" 
+            text="Fetching the latest movies and TV shows just for you..."
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="text-6xl">🎬</div>
+            <div className="text-white text-xl">Unable to load movie posters</div>
+            <p className="text-slate-400 text-sm max-w-md">
+              Don't worry! The app is still fully functional. 
+              Movie data will be available once you sign up.
+            </p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              aria-label="Retry loading movie posters"
+            >
+              Try Again
+            </button>
           </div>
         </div>
       </div>
+    );
+  }
 
+  return (
+    <div className="absolute inset-0 z-0">
+      {/* First row positioned right below header */}
+      <div className="pt-16">
+        <div className="h-[513px] w-full overflow-hidden relative flex">
+          {/* First container */}
+          <div className="flex-shrink-0 flex animate-scroll">
+            {content.topRow.map((item, index) => 
+              renderPoster(item, index, 'top-1')
+            )}
+          </div>
+          {/* Duplicate container for seamless loop */}
+          <div aria-hidden="true" className="flex-shrink-0 flex animate-scroll">
+            {content.topRow.map((item, index) => 
+              renderPoster(item, index, 'top-2')
+            )}
+          </div>
+        </div>
+        
+        {/* Second row right after first row */}
+        <div className="h-[513px] w-full overflow-hidden relative flex">
+          {/* First container */}
+          <div className="flex-shrink-0 flex animate-scroll-reverse">
+            {content.bottomRow.map((item, index) => 
+              renderPoster(item, index, 'bottom-1')
+            )}
+          </div>
+          {/* Duplicate container for seamless loop */}
+          <div aria-hidden="true" className="flex-shrink-0 flex animate-scroll-reverse">
+            {content.bottomRow.map((item, index) => 
+              renderPoster(item, index, 'bottom-2')
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

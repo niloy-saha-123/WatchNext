@@ -55,7 +55,7 @@ function LoginPage() {
       console.log('Login attempt:', formData);
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // For now, just log success
       alert('Login functionality will be implemented with backend!');
@@ -124,10 +124,10 @@ function LoginPage() {
         <Button 
           type="submit" 
           variant="primary" 
-          disabled={isLoading}
+          loading={isLoading}
           className="w-full"
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          Sign In
         </Button>
 
         <div className="text-center">
