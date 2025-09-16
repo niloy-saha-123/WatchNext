@@ -31,7 +31,7 @@ function Header() {
     >
       <div className="container mx-auto px-4 h-16 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className={`text-3xl font-black transition-all duration-300 tracking-tight ${
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight ${
           useWhiteBackground 
             ? 'text-slate-900 hover:text-red-500' 
             : 'text-slate-100 hover:text-orange-400'
