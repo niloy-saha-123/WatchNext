@@ -24,7 +24,7 @@ function DashboardPage() {
             <div className="max-w-4xl">
               <h1 className="text-4xl font-bold mb-4">Welcome back to WatchNext! 🎬</h1>
               <p className="text-lg opacity-90">
-                Your personalized dashboard to track movies, discover what's next, and never lose progress again.
+                Track every movie. Binge every series. Never lose your place again.
               </p>
             </div>
           </div>
@@ -42,38 +42,44 @@ function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center mb-4">
-                        <span className="text-white text-xl">🎬</span>
+                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
                       </div>
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-1">
                       {isLoading ? '...' : stats.moviesWatched}
                     </h3>
-                    <p className="text-slate-600 text-sm">Movies Watched</p>
+                    <p className="text-slate-600 text-sm">Movies</p>
                   </div>
                   
                   <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
-                        <span className="text-white text-xl">📺</span>
+                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
                       </div>
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-1">
                       {isLoading ? '...' : stats.showsTracked}
                     </h3>
-                    <p className="text-slate-600 text-sm">TV Shows Tracked</p>
+                    <p className="text-slate-600 text-sm">TV Shows</p>
                   </div>
                   
                   <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
                     <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
-                        <span className="text-white text-xl">⏱️</span>
+                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                       </div>
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900 mb-1">
                       {isLoading ? '...' : `${stats.totalHours}h`}
                     </h3>
-                    <p className="text-slate-600 text-sm">Watch Time</p>
+                    <p className="text-slate-600 text-sm">Hours Watched</p>
                   </div>
                 </div>
 
@@ -117,21 +123,27 @@ function DashboardPage() {
                     <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
                   </div>
                   <div className="p-6 space-y-3">
-                    <button className="w-full text-left p-3 rounded-lg bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 transition-all duration-300">
+                    <button className="w-full text-left p-3 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300">
                       <div className="flex items-center">
-                        <span className="text-lg mr-3">🔍</span>
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                         <span className="font-medium">Search Movies & Shows</span>
                       </div>
                     </button>
-                    <button className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors duration-300">
-                      <div className="flex items-center text-slate-700">
-                        <span className="text-lg mr-3">📝</span>
+                    <button className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-300">
+                      <div className="flex items-center text-slate-700 hover:text-orange-600">
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
                         <span className="font-medium">Add Manual Entry</span>
                       </div>
                     </button>
-                    <button className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors duration-300">
-                      <div className="flex items-center text-slate-700">
-                        <span className="text-lg mr-3">📊</span>
+                    <button className="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-orange-50 hover:border-orange-200 transition-colors duration-300">
+                      <div className="flex items-center text-slate-700 hover:text-orange-600">
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
                         <span className="font-medium">View Statistics</span>
                       </div>
                     </button>
