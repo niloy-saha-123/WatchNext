@@ -217,8 +217,136 @@ export const mediaAPI = {
   }
 };
 
+// Profile API calls
+export const profileAPI = {
+  // Get complete user profile data
+  getUserProfile: async () => {
+    return apiRequest('/user/profile');
+    
+    // Expected backend response:
+    // {
+    //   userInfo: {
+    //     id: 123,
+    //     name: "John Doe",
+    //     email: "john@example.com",
+    //     avatar: "https://...",
+    //     memberSince: "2023-01-15T00:00:00Z",
+    //     preferences: { theme: "dark", notifications: true }
+    //   },
+    //   stats: {
+    //     moviesWatched: 47,
+    //     showsTracked: 23,
+    //     episodesLogged: 298,
+    //     totalHours: 156,
+    //     averageRating: 7.8,
+    //     totalRatings: 65
+    //   },
+    //   favoriteGenres: [
+    //     { id: 28, name: "Action", percentage: 35, count: 16 },
+    //     { id: 878, name: "Sci-Fi", percentage: 28, count: 13 },
+    //     { id: 18, name: "Drama", percentage: 22, count: 10 },
+    //     { id: 35, name: "Comedy", percentage: 15, count: 7 }
+    //   ],
+    //   recentlyWatched: [
+    //     {
+    //       id: 1,
+    //       title: "Movie/Show Title",
+    //       type: "movie" | "tv",
+    //       poster: "https://image.tmdb.org/t/p/w342/...",
+    //       tmdbId: 12345,
+    //       watchedAt: "2024-01-10T14:30:00Z",
+    //       rating: 8.5,
+    //       notes: "Great film!"
+    //     }
+    //   ]
+    // }
+  },
+
+  // Update user info (name, email, avatar, etc.)
+  updateUserInfo: async (updates) => {
+    return apiRequest('/user/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    });
+    
+    // Expected request body:
+    // {
+    //   name?: "New Name",
+    //   email?: "new@email.com",
+    //   avatar?: "base64_string_or_url",
+    //   preferences?: { theme: "light", notifications: false }
+    // }
+  },
+
+  // Get detailed watch history with pagination
+  getWatchHistory: async (page = 1, limit = 20, type = 'all') => {
+    return apiRequest(`/user/history?page=${page}&limit=${limit}&type=${type}`);
+    
+    // Expected response:
+    // {
+    //   items: [...], // array of watched items
+    //   pagination: {
+    //     currentPage: 1,
+    //     totalPages: 5,
+    //     totalItems: 98,
+    //     hasNext: true,
+    //     hasPrev: false
+    //   }
+    // }
+  },
+
+  // Get user's favorite genres with detailed stats
+  getFavoriteGenres: async () => {
+    return apiRequest('/user/genres');
+    
+    // Expected response:
+    // {
+    //   genres: [
+    //     {
+    //       id: 28,
+    //       name: "Action",
+    //       count: 16,        // number of items watched in this genre
+    //       percentage: 35,   // percentage of total watched content
+    //       averageRating: 7.8,
+    //       totalHours: 45,   // hours watched in this genre
+    //       recentItems: [...] // last 3 items watched in this genre
+    //     }
+    //   ],
+    //   totalGenreItems: 45, // total items with genre data
+    //   lastUpdated: "2024-01-15T10:30:00Z"
+    // }
+  },
+
+  // Update user's rating for a movie/show
+  updateRating: async (itemId, itemType, rating, notes = '') => {
+    return apiRequest('/user/rating', {
+      method: 'POST',
+      body: JSON.stringify({
+        itemId,
+        itemType, // 'movie' or 'tv'
+        rating,   // 1-10 scale
+        notes
+      })
+    });
+  },
+
+  // Delete a watched item (removes from history)
+  deleteWatchedItem: async (itemId) => {
+    return apiRequest(`/user/watched/${itemId}`, {
+      method: 'DELETE'
+    });
+    
+    // Backend automatically:
+    // 1. Removes item from watch history
+    // 2. Updates statistics (decrements counts, hours)
+    // 3. Recalculates favorite genres
+    // 4. Returns updated profile data
+  }
+};
+
 export default {
   userStatsAPI,
   authAPI,
-  mediaAPI
+  mediaAPI,
+  profileAPI
 };

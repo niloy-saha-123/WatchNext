@@ -13,13 +13,13 @@ function AuthLayout({ children, title, subtitle }) {
       {/* Light overlay for consistency with homepage */}
       <div className="absolute inset-0 bg-slate-900/25 z-0"></div>
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 pt-8">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md space-y-8">
           {/* Logo Header */}
           <div className="text-center">
             <Link to="/" className="inline-block">
               <h1 className="text-4xl font-black text-white hover:text-orange-400 transition-all duration-300 tracking-tight">
-                <span className="text-white">
+                <span className="bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent font-brand">
                   Watch
                 </span>
                 <span className="text-white">

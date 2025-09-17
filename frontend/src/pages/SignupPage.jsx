@@ -215,11 +215,11 @@ function SignupPage() {
           />
           <label htmlFor="terms" className="ml-2 text-sm text-slate-300">
             I agree to the{' '}
-            <Link to="/terms" className="text-red-400 hover:text-red-300 transition-colors duration-300">
+            <Link to="/terms" className="text-red-300 hover:text-red-200 transition-colors duration-300">
               Terms of Service
             </Link>
             {' '}and{' '}
-            <Link to="/privacy" className="text-red-400 hover:text-red-300 transition-colors duration-300">
+            <Link to="/privacy" className="text-red-300 hover:text-red-200 transition-colors duration-300">
               Privacy Policy
             </Link>
           </label>
@@ -228,6 +228,7 @@ function SignupPage() {
         <Button 
           type="submit" 
           variant="primary" 
+          theme="red"
           loading={isLoading}
           className="w-full"
         >
@@ -239,7 +240,7 @@ function SignupPage() {
             Already have an account?{' '}
             <Link 
               to="/login" 
-              className="text-red-400 hover:text-red-300 transition-colors duration-300 font-medium"
+              className="text-red-300 hover:text-red-200 transition-colors duration-300 font-medium"
             >
               Sign in
             </Link>

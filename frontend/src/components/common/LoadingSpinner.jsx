@@ -22,9 +22,10 @@ function LoadingSpinner({ size = 'medium', variant = 'primary', text = '' }) {
   };
 
   const variantClasses = {
-    primary: 'border-red-600 border-t-transparent',
+    primary: 'border-orange-500 border-t-transparent', // Orange for dashboard
     secondary: 'border-white border-t-transparent',
-    slate: 'border-slate-400 border-t-transparent'
+    slate: 'border-slate-400 border-t-transparent',
+    red: 'border-red-500 border-t-transparent' // Red for homepage
   };
 
   return (

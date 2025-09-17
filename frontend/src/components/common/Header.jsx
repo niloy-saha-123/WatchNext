@@ -21,6 +21,9 @@ function Header() {
   // Use white background for authenticated pages
   const useWhiteBackground = isAuthenticated;
   
+  // Determine button theme based on page type
+  const buttonTheme = isAuthenticated ? 'orange' : 'red';
+  
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b ${
@@ -53,12 +56,12 @@ function Header() {
             // Public pages navigation - login/signup buttons
             <>
               <Link to="/login">
-                <Button variant="secondary" aria-label="Sign in to your account">
+                <Button variant="secondary" theme={buttonTheme} aria-label="Sign in to your account">
                   Login
                 </Button>
               </Link>
               <Link to="/signup">
-                <Button variant="primary" aria-label="Create a new account">
+                <Button variant="primary" theme={buttonTheme} aria-label="Create a new account">
                   Sign Up
                 </Button>
               </Link>

@@ -115,7 +115,7 @@ function LoginPage() {
           
           <Link 
             to="/forgot-password" 
-            className="text-sm text-red-400 hover:text-red-300 transition-colors duration-300"
+            className="text-sm text-red-300 hover:text-red-200 transition-colors duration-300"
           >
             Forgot password?
           </Link>
@@ -124,6 +124,7 @@ function LoginPage() {
         <Button 
           type="submit" 
           variant="primary" 
+          theme="red"
           loading={isLoading}
           className="w-full"
         >
@@ -135,7 +136,7 @@ function LoginPage() {
             Don't have an account?{' '}
             <Link 
               to="/signup" 
-              className="text-red-400 hover:text-red-300 transition-colors duration-300 font-medium"
+              className="text-red-300 hover:text-red-200 transition-colors duration-300 font-medium"
             >
               Sign up
             </Link>

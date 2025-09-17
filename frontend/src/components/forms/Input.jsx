@@ -25,9 +25,9 @@ function Input({
     bg-slate-800/30 backdrop-blur-sm 
     border border-slate-600/30 rounded-lg 
     text-white placeholder-slate-400 
-    focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+    focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent
     transition-all duration-300
-    ${error ? 'border-red-500 ring-1 ring-red-500' : ''}
+    ${error ? 'border-red-400 ring-1 ring-red-400' : ''}
     ${className}
   `.trim();
 
@@ -36,7 +36,7 @@ function Input({
       {label && (
         <label htmlFor={id} className="block text-sm font-medium text-slate-300">
           {label}
-          {required && <span className="text-red-400 ml-1">*</span>}
+          {required && <span className="text-red-300 ml-1">*</span>}
         </label>
       )}
       <div className="relative">
@@ -60,7 +60,7 @@ function Input({
         )}
       </div>
       {error && (
-        <p id={`${id}-error`} className="text-sm text-red-400 mt-1" role="alert">{error}</p>
+        <p id={`${id}-error`} className="text-sm text-red-300 mt-1" role="alert">{error}</p>
       )}
     </div>
   );

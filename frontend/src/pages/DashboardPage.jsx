@@ -5,7 +5,7 @@
  * Features a clean white background with strategic use of the brand gradient theme.
  */
 import React from 'react';
-import { Header, LoadingSpinner } from '../components/common';
+import { Header, LoadingSpinner, StatsCard, ErrorMessage } from '../components/common';
 import { useUserStats } from '../hooks/useUserStats';
 
 function DashboardPage() {
@@ -40,47 +40,42 @@ function DashboardPage() {
                 
                 {/* Quick Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-4">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-1">
-                      {isLoading ? '...' : stats.moviesWatched}
-                    </h3>
-                    <p className="text-slate-600 text-sm">Movies</p>
-                  </div>
+                  <StatsCard
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    }
+                    value={stats.moviesWatched}
+                    label="Movies"
+                    isLoading={isLoading}
+                    className="text-2xl"
+                  />
                   
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-4">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-1">
-                      {isLoading ? '...' : stats.showsTracked}
-                    </h3>
-                    <p className="text-slate-600 text-sm">TV Shows</p>
-                  </div>
+                  <StatsCard
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    }
+                    value={stats.showsTracked}
+                    label="TV Shows"
+                    isLoading={isLoading}
+                    className="text-2xl"
+                  />
                   
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-4">
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-1">
-                      {isLoading ? '...' : `${stats.totalHours}h`}
-                    </h3>
-                    <p className="text-slate-600 text-sm">Hours Watched</p>
-                  </div>
+                  <StatsCard
+                    icon={
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    }
+                    value={stats.totalHours}
+                    label="Hours Watched"
+                    suffix="h"
+                    isLoading={isLoading}
+                    className="text-2xl"
+                  />
                 </div>
 
                 {/* Loading State */}
@@ -92,9 +87,7 @@ function DashboardPage() {
 
                 {/* Error State */}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-600 text-sm">Error loading stats: {error}</p>
-                  </div>
+                  <ErrorMessage message={`Error loading stats: ${error}`} />
                 )}
 
                 {/* What's Next Section */}

@@ -25,7 +25,7 @@ function HeroSection() {
         </p>
         <div className="pt-4">
           <Link to="/signup">
-            <Button variant="primary">
+            <Button variant="primary" theme="red">
               Get Started for Free
             </Button>
           </Link>
