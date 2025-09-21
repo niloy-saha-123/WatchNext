@@ -7,7 +7,11 @@
  */
 import React, { useState, useEffect } from 'react';
 import { getFeaturedContent, formatPosterGridData } from '../../utils/movieData';
-import { getImageUrl } from '../../services/tmdbApi';
+// Simple image URL builder (backend handles TMDB integration)
+const getImageUrl = (path, size = 'w342') => {
+  if (!path) return null;
+  return `https://image.tmdb.org/t/p/${size}${path}`;
+};
 import { LoadingSpinner } from '../common';
 
 function AnimatedPosterGrid() {

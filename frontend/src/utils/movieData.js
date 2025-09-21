@@ -3,9 +3,10 @@
  * @path /frontend/src/utils/movieData.js
  * @description Utility functions to fetch and format movie/TV show data for WatchNext.
  * Focuses on popular content, recent releases, and franchises with sequels/prequels.
+ * Now uses the backend API instead of direct TMDB integration.
  */
 
-import tmdbApi from '../services/tmdbApi';
+import { mediaAPI } from '../services/apiClient';
 
 // Curated list of popular franchises and standalone hits with sequels/prequels
 const FEATURED_MOVIE_IDS = [
@@ -55,46 +56,11 @@ const FEATURED_TV_IDS = [
  */
 export const getFeaturedContent = async () => {
   try {
-    // Get trending and popular content
-    const [trendingData, popularMovies, popularTVShows] = await Promise.all([
-      tmdbApi.getTrending('all', 'week'),
-      tmdbApi.getPopularMovies(),
-      tmdbApi.getPopularTVShows()
-    ]);
-
-    // IDs to exclude
-    const excludeMovieIds = [691363]; // The Thing Behind The Door
-    const excludeMovieTitles = ['War of the Worlds']; // War of the Worlds (any version)
+    // Use the backend API to get featured content
+    const data = await mediaAPI.getFeatured();
     
-    // IDs to ensure are included
-    const ensureTVShows = [66732, 110316]; // Stranger Things, Alice in Borderland
-
-    // Filter out unwanted movies
-    let filteredMovies = popularMovies.results
-      .filter(movie => 
-        !excludeMovieIds.includes(movie.id) && 
-        !excludeMovieTitles.some(title => movie.title.includes(title))
-      )
-      .slice(0, 12);
-
-    // Get popular TV shows and ensure our desired shows are included
-    let tvShowsData = popularTVShows.results.slice(0, 10);
-    
-    // Add desired TV shows if not already present
-    for (const tvId of ensureTVShows) {
-      if (!tvShowsData.some(show => show.id === tvId)) {
-        try {
-          const showDetails = await tmdbApi.getTVShowDetails(tvId);
-          tvShowsData.unshift(showDetails); // Add to beginning
-          tvShowsData = tvShowsData.slice(0, 10); // Keep only 10
-        } catch (error) {
-          console.error(`Error fetching TV show ${tvId}:`, error);
-        }
-      }
-    }
-
-    // Format the data
-    const movies = filteredMovies.map(movie => ({
+    // Format the data for the poster grid
+    const movies = (data.movies || []).map(movie => ({
       id: movie.id,
       title: movie.title,
       posterPath: movie.poster_path,
@@ -105,7 +71,7 @@ export const getFeaturedContent = async () => {
       type: 'movie'
     }));
 
-    const tvShows = tvShowsData.map(show => ({
+    const tvShows = (data.tvShows || []).map(show => ({
       id: show.id,
       title: show.name,
       posterPath: show.poster_path,
@@ -119,7 +85,7 @@ export const getFeaturedContent = async () => {
     return {
       movies,
       tvShows,
-      trending: trendingData.results.slice(0, 5)
+      trending: [] // Backend doesn't provide trending yet
     };
   } catch (error) {
     console.error('Error fetching featured content:', error);
@@ -134,29 +100,9 @@ export const getFeaturedContent = async () => {
  */
 export const getFranchiseMovies = async () => {
   try {
-    // Popular movie franchise collection IDs
-    const franchiseCollections = [
-      1,      // The Godfather Collection
-      87096,  // The Avatar Collection
-      131292, // Fast & Furious Collection
-      86311,  // The Avengers Collection
-      556,    // Spider-Man Collection
-      131296, // X-Men Collection
-      748,    // Lord of the Rings Collection
-      10,     // Star Wars Collection
-    ];
-
-    const franchisePromises = franchiseCollections.map(async (collectionId) => {
-      try {
-        return await tmdbApi.getMovieCollection(collectionId);
-      } catch (error) {
-        console.error(`Error fetching collection ${collectionId}:`, error);
-        return null;
-      }
-    });
-
-    const franchises = await Promise.all(franchisePromises);
-    return franchises.filter(franchise => franchise !== null);
+    // TODO: Implement franchise collections when backend supports it
+    console.log('Franchise movies not implemented yet - using fallback');
+    return [];
   } catch (error) {
     console.error('Error fetching franchise movies:', error);
     return [];

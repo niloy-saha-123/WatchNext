@@ -5,7 +5,7 @@
  * favorite genres, and recently watched content. Provides loading states and error handling.
  */
 import { useState, useEffect } from 'react';
-// import { profileAPI } from '../services/apiService'; // Will be used when backend is ready
+// import { profileAPI } from '../services/apiClient'; // Will be used when backend is ready
 
 function useProfileData() {
   const [profileData, setProfileData] = useState({

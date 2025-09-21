@@ -6,7 +6,7 @@
  */
 import { useState, useEffect } from 'react';
 // eslint-disable-next-line no-unused-vars
-import { userStatsAPI } from '../services/apiService';
+import { userStatsAPI } from '../services/apiClient';
 
 export const useUserStats = () => {
   // State to store user statistics
