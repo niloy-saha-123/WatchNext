@@ -39,7 +39,32 @@ const config = {
 
   // CORS Configuration
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5180',
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Allow localhost on any port for development
+      if (origin.match(/^http:\/\/localhost:\d+$/)) {
+        return callback(null, true);
+      }
+      
+      // Allow specific origins from environment variable
+      const allowedOrigins = process.env.CORS_ORIGIN ? 
+        process.env.CORS_ORIGIN.split(',') : 
+        ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // In production, you might want to be more restrictive
+      if (config.nodeEnv === 'production') {
+        return callback(new Error('Not allowed by CORS'));
+      }
+      
+      // Allow any origin in development (for flexibility)
+      return callback(null, true);
+    },
     credentials: true,
   },
 
