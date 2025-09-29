@@ -13,12 +13,12 @@ const config = {
   host: process.env.HOST || 'localhost',
   nodeEnv: process.env.NODE_ENV || 'development',
 
-  // Database Configuration (for future use)
+  // Database Configuration
   database: {
     host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
+    port: process.env.DB_PORT || 27017, // MongoDB default port
     name: process.env.DB_NAME || 'watchnext',
-    user: process.env.DB_USER || 'postgres',
+    user: process.env.DB_USER || '',
     password: process.env.DB_PASSWORD || '',
   },
 

@@ -56,11 +56,15 @@ app.get('/health', (req, res) => {
 // Connect to MongoDB
 const connectDB = async () => {
   try {
+    // Prioritize MONGODB_URI from environment, fallback to constructed URI
     const mongoURI = process.env.MONGODB_URI || `mongodb://${config.database.host}:${config.database.port}/${config.database.name}`;
+    console.log('🔗 Connecting to MongoDB...');
+    console.log('📍 URI:', mongoURI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
     await mongoose.connect(mongoURI);
     console.log('✅ MongoDB connected successfully');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
+    console.error('💡 Make sure your MONGODB_URI is correct in your .env file');
     process.exit(1);
   }
 };
