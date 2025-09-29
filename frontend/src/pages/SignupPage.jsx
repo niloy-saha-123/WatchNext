@@ -1,11 +1,12 @@
 /**
  * @file SignupPage.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/pages/SignupPage.jsx
+ * @path frontend/src/pages/SignupPage.jsx
  * @description Signup page with required fields (name, email, birthday, phone) and minimalist red theme.
- * Features comprehensive form validation and responsive design for all device sizes.
+ * Includes comprehensive form validation and responsive design for all device sizes.
  */
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { AuthLayout } from '../components/layout';
 import { Input } from '../components/forms';
 import { Button } from '../components/common';
@@ -21,7 +22,15 @@ function SignupPage() {
   });
   
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,31 +103,36 @@ function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setIsLoading(false);
       return;
     }
 
+    // Clear previous errors
+    setErrors({});
+
     try {
-      // TODO: Implement actual registration logic
-      console.log('Signup attempt:', formData);
+      const result = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        birthday: formData.birthday,
+        phone: formData.phone || undefined
+      });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For now, just log success
-      alert('Signup functionality will be implemented with backend!');
+      if (result.success) {
+        // Redirect to dashboard on successful registration
+        navigate('/dashboard');
+      } else {
+        setErrors({ general: result.error || 'Registration failed. Please try again.' });
+      }
       
     } catch (error) {
       console.error('Signup error:', error);
-      setErrors({ general: 'Signup failed. Please try again.' });
-    } finally {
-      setIsLoading(false);
+      setErrors({ general: 'Registration failed. Please try again.' });
     }
   };
 

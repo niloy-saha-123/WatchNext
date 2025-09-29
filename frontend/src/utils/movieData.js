@@ -1,9 +1,9 @@
 /**
  * @file movieData.js
- * @path /frontend/src/utils/movieData.js
+ * @path frontend/src/utils/movieData.js
  * @description Utility functions to fetch and format movie/TV show data for WatchNext.
  * Focuses on popular content, recent releases, and franchises with sequels/prequels.
- * Now uses the backend API instead of direct TMDB integration.
+ * Uses the backend API instead of direct TMDB integration.
  */
 
 import { mediaAPI } from '../services/apiClient';

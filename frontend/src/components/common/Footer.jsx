@@ -1,13 +1,13 @@
 /**
  * @file Footer.jsx
  * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/common/Footer.jsx
- * @description This component renders the main footer for the application.
- * It's designed to be simple, clean, and provide essential information
- * like copyright and a link to the project's source code.
+ * @description Main footer component for the application.
+ * Designed to be simple, clean, and provide essential information
+ * like copyright and link to the project's source code.
  */
 import React from 'react';
 
-// An inline SVG component for the GitHub icon for better performance and scalability.
+// Inline SVG component for the GitHub icon for better performance and scalability
 const GitHubIcon = () => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 

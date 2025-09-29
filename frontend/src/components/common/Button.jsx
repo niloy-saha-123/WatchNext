@@ -1,7 +1,7 @@
 /**
  * @file Button.jsx
  * @path /frontend/src/components/common/Button.jsx
- * @description A reusable, styled button component with support for different variants.
+ * @description Reusable styled button component with support for different variants.
  * Updated to match the red-orange-purple gradient theme.
  */
 import React from 'react';

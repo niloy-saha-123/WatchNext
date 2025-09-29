@@ -1,9 +1,9 @@
 /**
  * @file HeroSection.jsx
  * @path /frontend/src/components/sections/HeroSection.jsx
- * @description This is the main "above the fold" content for the landing page.
- * It's designed to grab the user's attention with a strong headline
- * and a clear call-to-action, all set against the dynamic poster grid.
+ * @description Main "above the fold" content for the landing page.
+ * Designed to grab attention with strong headline and clear call-to-action,
+ * all set against the dynamic poster grid.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,7 @@ import { AnimatedPosterGrid } from '.';
 function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center text-center pt-24">
-      {/* The animated background component */}
+      {/* Animated background component */}
       <AnimatedPosterGrid />
       
       <div className="relative z-10 p-4 space-y-8 mt-16">

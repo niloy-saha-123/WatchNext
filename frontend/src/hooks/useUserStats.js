@@ -1,12 +1,11 @@
 /**
  * @file useUserStats.js
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/hooks/useUserStats.js
- * @description Custom hook to manage user statistics (movies, shows, watch time)
- * This hook will handle API calls to backend and state management
+ * @path frontend/src/hooks/useUserStats.js
+ * @description Custom hook to manage user statistics (movies, shows, watch time).
+ * Handles API calls to backend and state management.
  */
 import { useState, useEffect } from 'react';
-// eslint-disable-next-line no-unused-vars
-import { userStatsAPI } from '../services/apiClient';
+// import { userStatsAPI } from '../services/apiClient'; // TODO: Uncomment when backend is ready
 
 export const useUserStats = () => {
   // State to store user statistics

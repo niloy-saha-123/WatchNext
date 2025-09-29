@@ -1,8 +1,8 @@
 /**
  * @file apiClient.js
- * @path /frontend/src/services/apiClient.js
- * @description Frontend API client for communicating with the backend server
- * This replaces the old apiService.js and tmdbApi.js files that have been moved to backend
+ * @path frontend/src/services/apiClient.js
+ * @description Frontend API client for communicating with the backend server.
+ * Replaces the old apiService.js and tmdbApi.js files that have been moved to backend.
  */
 
 // API Configuration - Frontend only needs the backend API URL
@@ -10,26 +10,43 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('accessToken');
   return {
     'Content-Type': 'application/json',
     'Authorization': token ? `Bearer ${token}` : ''
   };
 };
 
-// Generic API request function
+// Generic API request function with automatic token refresh
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const config = {
+  let config = {
     headers: getAuthHeaders(),
     ...options
   };
 
   try {
-    const response = await fetch(url, config);
+    let response = await fetch(url, config);
+    
+    // If token expired (401), try to refresh
+    if (response.status === 401 && endpoint !== '/auth/refresh') {
+      try {
+        await authAPI.refreshToken();
+        // Retry with new token
+        config.headers = getAuthHeaders();
+        response = await fetch(url, config);
+      } catch (refreshError) {
+        // Refresh failed, redirect to login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+        throw new Error('Session expired. Please login again.');
+      }
+    }
     
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`);
     }
 
     return await response.json();
@@ -87,27 +104,123 @@ export const userStatsAPI = {
   }
 };
 
-// Authentication API calls (placeholder for future backend implementation)
+// Authentication API calls
 export const authAPI = {
-  // Login user
-  // eslint-disable-next-line no-unused-vars
-  login: async (email, password) => {
-    // TODO: Implement when backend auth routes are ready
-    console.log('Login attempt:', { email, password: '[REDACTED]' });
-    throw new Error('Authentication not implemented yet');
-  },
-
   // Register user
   register: async (userData) => {
-    // TODO: Implement when backend auth routes are ready
-    console.log('Register attempt:', userData);
-    throw new Error('Registration not implemented yet');
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Store tokens
+      if (data.data.accessToken && data.data.refreshToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  },
+
+  // Login user
+  login: async (email, password) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store tokens
+      if (data.data.accessToken && data.data.refreshToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  // Refresh access token
+  refreshToken: async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Refresh token expired or invalid, clear all tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        throw new Error(data.message || 'Token refresh failed');
+      }
+
+      // Store new access token
+      if (data.data.accessToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      throw error;
+    }
   },
 
   // Logout user
   logout: async () => {
-    // TODO: Implement when backend auth routes are ready
-    localStorage.removeItem('authToken');
+    try {
+      // Call backend logout endpoint (optional)
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Continue with logout even if backend call fails
+    } finally {
+      // Always clear local storage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
+    
     return { success: true };
   }
 };

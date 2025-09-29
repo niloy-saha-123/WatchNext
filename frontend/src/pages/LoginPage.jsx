@@ -1,11 +1,12 @@
 /**
  * @file LoginPage.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/pages/LoginPage.jsx
+ * @path frontend/src/pages/LoginPage.jsx
  * @description Login page with minimalist red theme and responsive design.
- * Features email/password authentication with smooth transitions and validation.
+ * Includes email/password authentication with smooth transitions and validation.
  */
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { AuthLayout } from '../components/layout';
 import { Input } from '../components/forms';
 import { Button } from '../components/common';
@@ -17,7 +18,15 @@ function LoginPage() {
   });
   
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +46,6 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     
     // Basic validation
     const newErrors = {};
@@ -46,25 +54,25 @@ function LoginPage() {
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setIsLoading(false);
       return;
     }
 
+    // Clear previous errors
+    setErrors({});
+
     try {
-      // TODO: Implement actual authentication logic
-      console.log('Login attempt:', formData);
+      const result = await login(formData.email, formData.password);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For now, just log success
-      alert('Login functionality will be implemented with backend!');
+      if (result.success) {
+        // Redirect to dashboard on successful login
+        navigate('/dashboard');
+      } else {
+        setErrors({ general: result.error || 'Login failed. Please try again.' });
+      }
       
     } catch (error) {
       console.error('Login error:', error);
       setErrors({ general: 'Login failed. Please try again.' });
-    } finally {
-      setIsLoading(false);
     }
   };
 

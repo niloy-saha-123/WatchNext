@@ -1,8 +1,8 @@
 /**
  * @file WhyJoinSection.jsx
  * @path /frontend/src/components/sections/WhyJoinSection.jsx
- * @description This component explains the key benefits and features of WatchNext
- * to convince users to sign up. It's placed after the hero section
+ * @description Explains the key benefits and features of WatchNext
+ * to convince users to sign up. Placed after the hero section
  * to provide more detailed information about the service.
  */
 import React from 'react';

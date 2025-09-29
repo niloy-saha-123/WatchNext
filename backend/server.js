@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 
 const { config, validateConfig } = require('./config/config');
 
@@ -52,7 +53,23 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Connect to MongoDB
+const connectDB = async () => {
+  try {
+    const mongoURI = process.env.MONGODB_URI || `mongodb://${config.database.host}:${config.database.port}/${config.database.name}`;
+    await mongoose.connect(mongoURI);
+    console.log('✅ MongoDB connected successfully');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    process.exit(1);
+  }
+};
+
+// Connect to database
+connectDB();
+
 // API Routes
+app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/media', require('./routes/mediaRoutes'));
 
 // API documentation endpoint
@@ -63,6 +80,12 @@ app.get('/api', (req, res) => {
     description: 'Backend API for WatchNext movie/TV tracking application',
     endpoints: {
       health: 'GET /health',
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        refresh: 'POST /api/auth/refresh',
+        logout: 'POST /api/auth/logout'
+      },
       media: {
         popular: 'GET /api/media/popular?type=movie|tv&page=1',
         trending: 'GET /api/media/trending?type=all|movie|tv&time=day|week',

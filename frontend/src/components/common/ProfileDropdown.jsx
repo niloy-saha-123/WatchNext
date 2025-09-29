@@ -1,15 +1,18 @@
 /**
  * @file ProfileDropdown.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/common/ProfileDropdown.jsx
- * @description Profile dropdown menu component for dashboard header
+ * @path frontend/src/components/common/ProfileDropdown.jsx
+ * @description Profile dropdown menu component for dashboard header.
  * Includes user info, settings, and logout functionality
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 function ProfileDropdown({ user = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { user: authUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Helper function to get first letter of first name
   const getInitials = (name) => {
@@ -17,14 +20,12 @@ function ProfileDropdown({ user = null }) {
     return name.trim().charAt(0).toUpperCase();
   };
 
-  // Mock user data for now - will come from auth context later
-  const defaultUser = {
-    name: 'John Doe',
-    email: 'john@example.com',
+  // Use auth user or passed user prop
+  const currentUser = user || authUser || {
+    name: 'Guest User',
+    email: 'guest@example.com',
     avatar: null
   };
-
-  const currentUser = user || defaultUser;
   const userInitials = getInitials(currentUser.name);
 
   // Close dropdown when clicking outside
@@ -42,11 +43,16 @@ function ProfileDropdown({ user = null }) {
   }, []);
 
   // Handle logout
-  const handleLogout = () => {
-    // TODO: Implement actual logout logic
-    console.log('Logout clicked');
-    // Will redirect to homepage after logout
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still redirect even if logout fails
+      navigate('/');
+    }
   };
 
   return (

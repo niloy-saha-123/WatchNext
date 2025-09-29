@@ -1,7 +1,7 @@
 /**
  * @file AnimatedPosterGrid.jsx
  * @path /frontend/src/components/sections/AnimatedPosterGrid.jsx
- * @description This component creates a true infinite scrolling poster carousel with two rows.
+ * @description Creates infinite scrolling poster carousel with two rows.
  * Top row scrolls right, bottom row scrolls left. Uses real TMDB data for movie and TV show posters.
  * No visible restart or jerking - continuous merry-go-round effect.
  */

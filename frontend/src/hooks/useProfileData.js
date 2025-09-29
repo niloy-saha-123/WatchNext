@@ -1,6 +1,6 @@
 /**
  * @file useProfileData.js
- * @path /frontend/src/hooks/useProfileData.js
+ * @path frontend/src/hooks/useProfileData.js
  * @description Custom hook for managing user profile data including detailed stats,
  * favorite genres, and recently watched content. Provides loading states and error handling.
  */

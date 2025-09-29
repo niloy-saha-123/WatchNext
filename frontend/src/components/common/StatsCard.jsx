@@ -1,7 +1,7 @@
 /**
  * @file StatsCard.jsx
  * @path /frontend/src/components/common/StatsCard.jsx
- * @description Reusable stats card component for consistent display across dashboard and profile pages.
+ * @description Reusable stats card component for consistent display across dashboard and profile pages
  */
 import React from 'react';
 

@@ -1,7 +1,7 @@
 /**
  * @file ErrorMessage.jsx
  * @path /frontend/src/components/common/ErrorMessage.jsx
- * @description Reusable error message component for consistent error display.
+ * @description Reusable error message component for consistent error display
  */
 import React from 'react';
 

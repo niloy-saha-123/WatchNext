@@ -1,10 +1,8 @@
 /**
  * @file Header.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/common/Header.jsx
- * @description This component renders the main navigation header for the application.
- * It is designed to be semi-transparent and fixed at the top of the viewport.
- * It includes the application logo which links back to the homepage, and
- * primary/secondary action buttons for user authentication.
+ * @path frontend/src/components/common/Header.jsx
+ * @description Main navigation header component for the application.
+ * Semi-transparent fixed header with logo and authentication buttons.
  */
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';

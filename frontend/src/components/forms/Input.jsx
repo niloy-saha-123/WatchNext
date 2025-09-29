@@ -2,7 +2,7 @@
  * @file Input.jsx
  * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/forms/Input.jsx
  * @description Reusable input component with consistent styling and validation support.
- * Designed with the minimalist red theme to match the application aesthetic.
+ * Designed with minimalist red theme to match the application aesthetic.
  */
 import React from 'react';
 import { LoadingSpinner } from '../common';

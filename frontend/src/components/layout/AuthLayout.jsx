@@ -2,7 +2,7 @@
  * @file AuthLayout.jsx
  * @path /frontend/src/components/layout/AuthLayout.jsx
  * @description Reusable layout component for authentication pages.
- * Features a centered design with the minimalist red theme and gradient background.
+ * Features centered design with minimalist red theme and gradient background.
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
