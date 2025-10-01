@@ -24,7 +24,7 @@ const config = {
 
   // JWT Configuration
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+    secret: process.env.JWT_SECRET || 'secret-key-change-in-production',
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
@@ -57,7 +57,7 @@ const config = {
         return callback(null, true);
       }
       
-      // In production, you might want to be more restrictive
+      // In production, might want to be more restrictive
       if (config.nodeEnv === 'production') {
         return callback(new Error('Not allowed by CORS'));
       }

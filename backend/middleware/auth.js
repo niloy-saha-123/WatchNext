@@ -125,7 +125,7 @@ const requireRole = (role) => {
     }
 
     // For now, all users have the same role
-    // In future, you can add role-based access control
+    // In future, can add role-based access control
     if (req.user.role && req.user.role !== role) {
       return res.status(403).json({
         success: false,

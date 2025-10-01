@@ -42,7 +42,7 @@ backend/
    
    Edit `.env` and add your credentials:
    ```env
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+   JWT_SECRET=super-secret-jwt-key-change-this-in-production
    TMDB_API_KEY=your_tmdb_api_key_here
    # OR
    TMDB_READ_ACCESS_TOKEN=your_tmdb_read_access_token_here
