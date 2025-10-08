@@ -1,6 +1,6 @@
 /**
  * @file LoadingSpinner.jsx
- * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/common/LoadingSpinner.jsx
+ * @path /frontend/src/components/common/LoadingSpinner.jsx
  * @description Reusable loading spinner component with different sizes and themes
  * 
  * Usage Examples:
