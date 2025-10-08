@@ -86,6 +86,21 @@ export const mediaAPI = {
   // Get featured content for homepage
   getFeatured: async () => {
     return apiRequest('/media/featured');
+  },
+
+  // Get detailed information for movies/TV shows
+  getDetails: async (type, id) => {
+    return apiRequest(`/media/${type}/${id}`);
+  },
+
+  // Get cast information for movies/TV shows
+  getCast: async (type, id) => {
+    return apiRequest(`/media/${type}/${id}/cast`);
+  },
+
+  // Get recommendations for movies/TV shows
+  getRecommendations: async (type, id) => {
+    return apiRequest(`/media/${type}/${id}/recommendations`);
   }
 };
 

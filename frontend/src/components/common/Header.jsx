@@ -12,9 +12,10 @@ import ProfileDropdown from './ProfileDropdown';
 function Header() {
   const location = useLocation();
   
-  // Check if user is on authenticated pages (dashboard, profile, search, etc.)
+  // Check if user is on authenticated pages (dashboard, profile, search, movie/TV details, etc.)
   const authenticatedPages = ['/dashboard', '/profile', '/search', '/settings', '/help'];
-  const isAuthenticated = authenticatedPages.some(page => location.pathname.startsWith(page));
+  const isMovieOrTVDetail = location.pathname.match(/^\/(movie|tv)\/\d+$/);
+  const isAuthenticated = authenticatedPages.some(page => location.pathname.startsWith(page)) || isMovieOrTVDetail;
   
   // Use white background for authenticated pages
   const useWhiteBackground = isAuthenticated;

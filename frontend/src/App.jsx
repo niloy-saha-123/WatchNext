@@ -14,6 +14,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import SearchResultsPage from './pages/SearchResultsPage';
+import MovieShowDetailPage from './pages/MovieShowDetailPage';
 // import LoadingDemo from './components/common/LoadingDemo'; // Keep for reference - DO NOT USE IN PRODUCTION
 import './index.css'; // Ensure global styles and Tailwind are imported
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/:type/:id" element={<MovieShowDetailPage />} />
           {/* <Route path="/demo" element={<LoadingDemo />} /> */} {/* REFERENCE ONLY - Uncomment for LoadingSpinner demos */}
           {/* TODO: Add more routes like profile, settings, etc. */}
         </Routes>

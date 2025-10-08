@@ -1,6 +1,6 @@
 # WatchNext
 
-WatchNext is a comprehensive movie and TV show tracking application that solves the common problem of losing track of viewing progress across multiple streaming platforms. The application enables users to maintain detailed watchlists, track episodes watched, add personal notes and ratings, and receive notifications about new seasons and sequels.
+WatchNext is a comprehensive movie and TV show tracking application that solves the common problem of losing track of viewing progress across multiple streaming platforms. The application enables users to maintain detailed watchlists, track episodes watched, add personal notes for watchlisted content, and receive notifications about new seasons and sequels.
 
 ## Problem Statement
 
@@ -12,9 +12,10 @@ With the proliferation of streaming services and the abundance of content availa
 - **User Authentication**: Secure registration and login system with JWT tokens
 - **Watchlist Management**: Add movies and TV shows to personalized lists
 - **Episode Tracking**: Track progress through TV series with season and episode details
-- **Personal Notes**: Add custom notes and ratings for watched content
+- **Personal Notes**: Add custom notes for watchlisted content
 - **Progress Visualization**: Dashboard showing viewing statistics and progress
 - **Smart Recommendations**: Algorithm-based suggestions for what to watch next
+- **Content Bundles**: Create curated collections like "MCU Movies", "Christopher Nolan Films", or "Christmas Movies" - similar to Spotify playlists but for movies and shows
 
 ### Advanced Features
 - **New Season Alerts**: Automatic notifications when new seasons of tracked shows are released
@@ -89,6 +90,8 @@ WatchNext/
 
 ### Planned Features
 - **Episode Tracking**: Detailed TV show progress tracking
+- **Content Bundles**: Create and share themed collections (MCU, Director's filmography, etc.)
+- **Bundle Sharing**: Share bundles with friends or make them public
 - **Notification System**: New season and sequel alerts
 - **Recommendation Engine**: Personalized content suggestions
 - **Social Features**: Share watchlists and reviews
@@ -114,6 +117,15 @@ WatchNext/
 - `POST /api/watchlist` - Add item to watchlist
 - `PUT /api/watchlist/:id` - Update watchlist item
 - `DELETE /api/watchlist/:id` - Remove from watchlist
+
+### Content Bundles (Planned)
+- `GET /api/bundles` - User's created bundles
+- `POST /api/bundles` - Create new bundle
+- `GET /api/bundles/:id` - Get bundle details
+- `PUT /api/bundles/:id` - Update bundle
+- `DELETE /api/bundles/:id` - Delete bundle
+- `POST /api/bundles/:id/items` - Add item to bundle
+- `DELETE /api/bundles/:id/items/:itemId` - Remove item from bundle
 
 ## Development Setup
 

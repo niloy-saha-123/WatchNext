@@ -82,6 +82,66 @@ router.get('/tv/:id', async (req, res) => {
   }
 });
 
+// GET /api/media/:type/:id - Get details for any media type
+router.get('/:type/:id', async (req, res) => {
+  try {
+    const { type, id } = req.params;
+    
+    if (type === 'movie') {
+      const data = await tmdbService.getMovieDetails(id);
+      res.json(data);
+    } else if (type === 'tv') {
+      const data = await tmdbService.getTVShowDetails(id);
+      res.json(data);
+    } else {
+      return res.status(400).json({ error: 'Invalid type. Must be "movie" or "tv"' });
+    }
+  } catch (error) {
+    console.error('Error fetching media details:', error);
+    res.status(500).json({ error: 'Failed to fetch media details' });
+  }
+});
+
+// GET /api/media/:type/:id/cast - Get cast for movies/TV shows
+router.get('/:type/:id/cast', async (req, res) => {
+  try {
+    const { type, id } = req.params;
+    
+    if (type === 'movie') {
+      const data = await tmdbService.getMovieCredits(id);
+      res.json(data);
+    } else if (type === 'tv') {
+      const data = await tmdbService.getTVShowCredits(id);
+      res.json(data);
+    } else {
+      return res.status(400).json({ error: 'Invalid type. Must be "movie" or "tv"' });
+    }
+  } catch (error) {
+    console.error('Error fetching cast:', error);
+    res.status(500).json({ error: 'Failed to fetch cast' });
+  }
+});
+
+// GET /api/media/:type/:id/recommendations - Get recommendations for movies/TV shows
+router.get('/:type/:id/recommendations', async (req, res) => {
+  try {
+    const { type, id } = req.params;
+    
+    if (type === 'movie') {
+      const data = await tmdbService.getMovieRecommendations(id);
+      res.json(data);
+    } else if (type === 'tv') {
+      const data = await tmdbService.getTVShowRecommendations(id);
+      res.json(data);
+    } else {
+      return res.status(400).json({ error: 'Invalid type. Must be "movie" or "tv"' });
+    }
+  } catch (error) {
+    console.error('Error fetching recommendations:', error);
+    res.status(500).json({ error: 'Failed to fetch recommendations' });
+  }
+});
+
 // GET /api/media/featured - Get featured content for homepage
 router.get('/featured', async (req, res) => {
   try {

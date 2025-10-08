@@ -103,9 +103,8 @@ function SearchInput({
     setSearchQuery('');
     setSearchResults([]);
     setShowDropdownResults(false);
-    // For now, navigate to search page with the specific item as context
-    // TODO: Create detail pages for movies/TV shows
-    navigate(`/search?q=${encodeURIComponent(item.title || item.name)}`);
+    // Navigate to the detail page for the selected movie/TV show
+    navigate(`/${item.media_type}/${item.id}`);
   };
 
   // Handle "View All Results" click

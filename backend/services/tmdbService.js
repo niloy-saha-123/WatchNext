@@ -122,6 +122,26 @@ const getMovieCollection = async (collectionId) => {
   return apiRequest(`/collection/${collectionId}`);
 };
 
+// Get movie credits (cast and crew)
+const getMovieCredits = async (movieId) => {
+  return apiRequest(`/movie/${movieId}/credits`);
+};
+
+// Get TV show credits (cast and crew)
+const getTVShowCredits = async (tvId) => {
+  return apiRequest(`/tv/${tvId}/credits`);
+};
+
+// Get movie recommendations
+const getMovieRecommendations = async (movieId, page = 1) => {
+  return apiRequest(`/movie/${movieId}/recommendations`, { page });
+};
+
+// Get TV show recommendations
+const getTVShowRecommendations = async (tvId, page = 1) => {
+  return apiRequest(`/tv/${tvId}/recommendations`, { page });
+};
+
 module.exports = {
   getPopularMovies,
   getPopularTVShows,
@@ -134,5 +154,9 @@ module.exports = {
   getTVShowDetails,
   searchMulti,
   getMovieCollection,
+  getMovieCredits,
+  getTVShowCredits,
+  getMovieRecommendations,
+  getTVShowRecommendations,
   getImageUrl
 };
