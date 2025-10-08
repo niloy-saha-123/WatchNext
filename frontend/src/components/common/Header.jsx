@@ -12,8 +12,8 @@ import ProfileDropdown from './ProfileDropdown';
 function Header() {
   const location = useLocation();
   
-  // Check if user is on authenticated pages (dashboard, profile, etc.)
-  const authenticatedPages = ['/dashboard', '/profile', '/settings', '/help'];
+  // Check if user is on authenticated pages (dashboard, profile, search, etc.)
+  const authenticatedPages = ['/dashboard', '/profile', '/search', '/settings', '/help'];
   const isAuthenticated = authenticatedPages.some(page => location.pathname.startsWith(page));
   
   // Use white background for authenticated pages

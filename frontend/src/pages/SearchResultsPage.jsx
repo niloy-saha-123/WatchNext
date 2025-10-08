@@ -5,30 +5,20 @@
  * Shows search results with poster images, titles, types, and release years.
  */
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { mediaAPI } from '../services/apiClient';
-import { LoadingSpinner, ErrorMessage } from '../components/common';
+import { LoadingSpinner, ErrorMessage, SearchInput } from '../components/common';
 import Header from '../components/common/Header';
 
 function SearchResultsPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const query = searchParams.get('q') || '';
   
-  const [searchInput, setSearchInput] = useState(query);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-
-  // Handle search form submission
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchInput.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchInput.trim())}`);
-    }
-  };
 
   // Fetch search results
   const fetchResults = async (searchQuery, pageNum = 1, append = false) => {
@@ -40,10 +30,30 @@ function SearchResultsPage() {
     try {
       const data = await mediaAPI.search(searchQuery, pageNum);
       
+      // Filter for quality movies/TV shows only
+      const filteredResults = data.results?.filter(item => {
+        // Only movies and TV shows
+        if (item.media_type !== 'movie' && item.media_type !== 'tv') {
+          return false;
+        }
+        
+        // Must have a title/name
+        if (!item.title && !item.name) {
+          return false;
+        }
+        
+        // Must have either a poster OR good metadata (rating, release date, etc.)
+        const hasPoster = item.poster_path && item.poster_path.trim() !== '';
+        const hasReleaseYear = item.release_date || item.first_air_date;
+        const hasGoodMetadata = item.vote_average > 0 && hasReleaseYear;
+        
+        return hasPoster || hasGoodMetadata;
+      }) || [];
+      
       if (append) {
-        setResults(prev => [...prev, ...(data.results || [])]);
+        setResults(prev => [...prev, ...filteredResults]);
       } else {
-        setResults(data.results || []);
+        setResults(filteredResults);
       }
       
       setHasMore(pageNum < data.total_pages);
@@ -66,7 +76,6 @@ function SearchResultsPage() {
   // Initial search when query changes
   useEffect(() => {
     if (query) {
-      setSearchInput(query);
       setResults([]);
       setPage(1);
       fetchResults(query, 1, false);
@@ -82,7 +91,11 @@ function SearchResultsPage() {
   // Format release date
   const getReleaseYear = (date) => {
     if (!date) return '';
-    return new Date(date).getFullYear();
+    try {
+      return new Date(date).getFullYear();
+    } catch {
+      return '';
+    }
   };
 
   // Get media type display name
@@ -118,26 +131,14 @@ function SearchResultsPage() {
             </h1>
             
             {/* Search Input */}
-            <form onSubmit={handleSearch} className="max-w-md mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search movies and TV shows..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-slate-300 text-slate-900 placeholder-slate-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-md text-slate-500 hover:text-red-500 transition-colors"
-                  aria-label="Search"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-              </div>
-            </form>
+            <div className="max-w-md mb-4">
+              <SearchInput
+                placeholder="Search movies and TV shows..."
+                showDropdown={true}
+                maxResults={5}
+                initialValue={query}
+              />
+            </div>
             
             {results.length > 0 && (
               <p className="text-slate-600">
@@ -185,13 +186,27 @@ function SearchResultsPage() {
                     className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
                   >
                     {/* Poster Image */}
-                    <div className="aspect-[2/3] bg-slate-200 relative overflow-hidden">
-                      <img
-                        src={getImageUrl(item.poster_path)}
-                        alt={item.title || item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        loading="lazy"
-                      />
+                    <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative overflow-hidden">
+                      {item.poster_path ? (
+                        <img
+                          src={getImageUrl(item.poster_path)}
+                          alt={item.title || item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500">
+                          {item.media_type === 'movie' ? (
+                            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </div>
+                      )}
                       
                       {/* Media Type Badge */}
                       <div className="absolute top-2 left-2">
