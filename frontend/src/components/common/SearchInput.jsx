@@ -149,7 +149,7 @@ function SearchInput({
           value={searchQuery}
           onChange={handleSearchInput}
           onKeyPress={handleSearchKeyPress}
-          className="w-full p-3 rounded-lg border-2 border-slate-300 text-slate-900 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
+          className="w-full px-4 py-2 rounded-full border border-slate-300 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-200 transition-all duration-200 bg-white hover:border-slate-400"
         />
         {isSearching && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -186,7 +186,7 @@ function SearchInput({
                 <button
                   key={`${item.media_type}-${item.id}`}
                   onClick={() => handleResultClick(item)}
-                  className="w-full text-left p-3 hover:bg-orange-50 border-b border-slate-100 last:border-b-0 transition-colors"
+                  className="w-full text-left p-3 hover:bg-red-50 border-b border-slate-100 last:border-b-0 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded overflow-hidden flex-shrink-0">
@@ -241,7 +241,7 @@ function SearchInput({
               <div className="border-t border-slate-200">
                 <button
                   onClick={handleViewAllClick}
-                  className="w-full p-3 text-center text-orange-600 hover:bg-orange-50 font-medium transition-colors"
+                  className="w-full p-3 text-center text-red-600 hover:bg-red-50 font-medium transition-colors"
                 >
                   View All Results for "{searchQuery}"
                 </button>

@@ -8,6 +8,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '.';
 import ProfileDropdown from './ProfileDropdown';
+import SearchInput from './SearchInput';
 
 function Header() {
   const location = useLocation();
@@ -31,23 +32,35 @@ function Header() {
           : 'bg-slate-900/80 border-slate-700'
       }`}
     >
-      <div className="container mx-auto px-4 h-16 flex justify-between items-center">
+      <div className="container mx-auto px-4 h-16 flex items-center gap-6">
         {/* Logo */}
-        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight ${
-          useWhiteBackground 
-            ? 'text-slate-900 hover:text-red-500' 
-            : 'text-slate-100 hover:text-orange-400'
-        }`}>
-          <span className="bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent font-brand">
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-2xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
+          <span className={useWhiteBackground ? 'text-orange-500' : 'bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent'}>
             Watch
           </span>
-          <span className={useWhiteBackground ? 'text-slate-900' : 'text-white'}>
-            Next
-          </span>
+          <span className={useWhiteBackground ? 'text-slate-900' : 'text-white'}>Next</span>
         </Link>
 
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Search Bar - Only on authenticated pages */}
+        {isAuthenticated && (
+          <div className="flex-1 max-w-2xl mx-auto">
+            <SearchInput
+              placeholder="Search..."
+              showDropdown={true}
+              maxResults={5}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
         {/* Action Buttons */}
-        <nav className="flex items-center gap-4" role="navigation" aria-label="Main navigation">
+        <nav className="flex items-center gap-4 flex-shrink-0" role="navigation" aria-label="Main navigation">
           {isAuthenticated ? (
             // Authenticated pages navigation - profile menu
             <ProfileDropdown />
