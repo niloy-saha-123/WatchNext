@@ -5,12 +5,13 @@
  * Features a clean white background with strategic use of the brand gradient theme.
  */
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Header, LoadingSpinner, StatsCard, ErrorMessage, SearchInput } from '../components/common';
-import { useUserStats } from '../hooks/useUserStats';
+import { useWatchData } from '../contexts/WatchDataContext';
 
 function DashboardPage() {
-  // Hook to manage user statistics
-  const { stats, isLoading, error } = useUserStats();
+  // Hook to manage watch data
+  const { moviesWatched, showsWatched, getTotalHours } = useWatchData();
 
   return (
     <div className="min-h-screen bg-white">
@@ -41,29 +42,33 @@ function DashboardPage() {
                 
                 {/* Quick Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <StatsCard
-                    icon={
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    }
-                    value={stats.moviesWatched}
-                    label="Movies"
-                    isLoading={isLoading}
-                    className="text-2xl"
-                  />
+                  <Link to="/my-movies" className="block">
+                    <StatsCard
+                      icon={
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      }
+                      value={moviesWatched}
+                      label="Movies"
+                      isLoading={false}
+                      className="text-2xl hover:shadow-lg transition-shadow cursor-pointer"
+                    />
+                  </Link>
                   
-                  <StatsCard
-                    icon={
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    }
-                    value={stats.showsTracked}
-                    label="TV Shows"
-                    isLoading={isLoading}
-                    className="text-2xl"
-                  />
+                  <Link to="/my-shows" className="block">
+                    <StatsCard
+                      icon={
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      }
+                      value={showsWatched}
+                      label="TV Shows"
+                      isLoading={false}
+                      className="text-2xl hover:shadow-lg transition-shadow cursor-pointer"
+                    />
+                  </Link>
                   
                   <StatsCard
                     icon={
@@ -71,25 +76,14 @@ function DashboardPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     }
-                    value={stats.totalHours}
+                    value={Math.round(getTotalHours())}
                     label="Hours Watched"
                     suffix="h"
-                    isLoading={isLoading}
+                    isLoading={false}
                     className="text-2xl"
                   />
                 </div>
 
-                {/* Loading State */}
-                {isLoading && (
-                  <div className="flex items-center justify-center py-8">
-                    <LoadingSpinner size="large" variant="primary" text="Loading your stats..." />
-                  </div>
-                )}
-
-                {/* Error State */}
-                {error && (
-                  <ErrorMessage message={`Error loading stats: ${error}`} />
-                )}
 
                 {/* What's Next Section */}
                 <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
@@ -120,6 +114,23 @@ function DashboardPage() {
                       showDropdown={true}
                       maxResults={5}
                     />
+                  </div>
+                </div>
+
+                {/* Watchlist */}
+                <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
+                  <div className="p-6 border-b border-slate-200">
+                    <h3 className="text-lg font-semibold text-slate-900">My Watchlist</h3>
+                  </div>
+                  <div className="p-6">
+                    <Link
+                      to="/watchlist"
+                      className="block text-center py-6 text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                      <div className="text-3xl mb-3">📝</div>
+                      <p className="text-sm font-medium">View Watchlist</p>
+                      <p className="text-xs text-slate-500 mt-1">See what you want to watch</p>
+                    </Link>
                   </div>
                 </div>
 

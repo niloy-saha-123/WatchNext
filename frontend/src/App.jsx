@@ -8,6 +8,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { WatchDataProvider } from './contexts/WatchDataContext';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -15,13 +16,17 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import MovieShowDetailPage from './pages/MovieShowDetailPage';
+import MyMoviesPage from './pages/MyMoviesPage';
+import MyShowsPage from './pages/MyShowsPage';
+import WatchlistPage from './pages/WatchlistPage';
 // import LoadingDemo from './components/common/LoadingDemo'; // Keep for reference - DO NOT USE IN PRODUCTION
 import './index.css'; // Ensure global styles and Tailwind are imported
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <WatchDataProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -29,11 +34,15 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/my-movies" element={<MyMoviesPage />} />
+          <Route path="/my-shows" element={<MyShowsPage />} />
+          <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/:type/:id" element={<MovieShowDetailPage />} />
           {/* <Route path="/demo" element={<LoadingDemo />} /> */} {/* REFERENCE ONLY - Uncomment for LoadingSpinner demos */}
           {/* TODO: Add more routes like profile, settings, etc. */}
         </Routes>
-      </Router>
+        </Router>
+      </WatchDataProvider>
     </AuthProvider>
   );
 }

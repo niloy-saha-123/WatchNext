@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header, LoadingSpinner, ErrorMessage, Button } from '../components/common';
 import { mediaAPI } from '../services/apiClient';
+import { useWatchData } from '../contexts/WatchDataContext';
 
 function MovieShowDetailPage() {
   const { id, type } = useParams();
@@ -17,15 +18,42 @@ function MovieShowDetailPage() {
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userStatus, setUserStatus] = useState({
-    watchlist: false,
-    watched: false,
-    rating: null,
-    notes: ''
-  });
+  const { 
+    isWatched, 
+    isInWatchlist, 
+    getWatchedContent, 
+    addWatchedMovie, 
+    addWatchedShow, 
+    addToWatchlist, 
+    removeFromWatchlist,
+    updateMovie,
+    updateShow
+  } = useWatchData();
   const [showEpisodeTracker, setShowEpisodeTracker] = useState(false);
   const [episodeProgress, setEpisodeProgress] = useState({});
   const [visibleSeasons, setVisibleSeasons] = useState(5); // Show first 5 seasons by default
+  
+  // Get current watch data
+  const currentWatchData = getWatchedContent(id, type);
+  const currentRating = currentWatchData?.rating || null;
+  const currentNotes = currentWatchData?.notes || '';
+
+  // Load existing watch data when component mounts
+  useEffect(() => {
+    if (mediaData && id) {
+      const existingData = getWatchedContent(id, type);
+      if (existingData) {
+        if (type === 'tv' && existingData.episodeProgress) {
+          setEpisodeProgress(existingData.episodeProgress);
+        }
+      } else {
+        // Reset episode progress for new shows
+        setEpisodeProgress({});
+      }
+      // Always close episode tracker when navigating to new show/movie
+      setShowEpisodeTracker(false);
+    }
+  }, [mediaData, id, type, getWatchedContent]);
 
   useEffect(() => {
     const fetchMediaData = async () => {
@@ -64,18 +92,29 @@ function MovieShowDetailPage() {
   }, [id, type]);
 
   const handleAddToWatchlist = () => {
-    setUserStatus(prev => ({ ...prev, watchlist: !prev.watchlist }));
-    // TODO: Implement API call to add/remove from watchlist
+    if (!mediaData) return;
+    
+    if (isInWatchlist(id)) {
+      removeFromWatchlist(id);
+    } else {
+      addToWatchlist(mediaData);
+    }
   };
 
   const handleMarkWatched = () => {
-    if (mediaData && mediaData.media_type === 'tv') {
+    if (!mediaData) return;
+    
+    if (mediaData.media_type === 'tv') {
       // For TV shows, show episode tracker
       setShowEpisodeTracker(!showEpisodeTracker);
     } else {
-      // For movies, just toggle watched status
-      setUserStatus(prev => ({ ...prev, watched: !prev.watched }));
-      // TODO: Implement API call to mark as watched
+      // For movies, toggle watched status
+      if (isWatched(id, type)) {
+        // Remove from watched list (this would need additional context method)
+        console.log('Remove from watched - implement if needed');
+      } else {
+        addWatchedMovie(mediaData);
+      }
     }
   };
 
@@ -181,13 +220,19 @@ function MovieShowDetailPage() {
   };
 
   const handleRatingChange = (rating) => {
-    setUserStatus(prev => ({ ...prev, rating }));
-    // TODO: Implement API call to save rating
+    if (type === 'movie') {
+      updateMovie(id, { rating });
+    } else if (type === 'tv') {
+      updateShow(id, { rating });
+    }
   };
 
   const handleNotesChange = (notes) => {
-    setUserStatus(prev => ({ ...prev, notes }));
-    // TODO: Implement API call to save notes
+    if (type === 'movie') {
+      updateMovie(id, { notes });
+    } else if (type === 'tv') {
+      updateShow(id, { notes });
+    }
   };
 
   const getImageUrl = (path, size = 'original') => {
@@ -328,15 +373,15 @@ function MovieShowDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <Button
                     onClick={handleAddToWatchlist}
-                    variant={userStatus.watchlist ? 'primary' : 'outline'}
+                    variant={isInWatchlist(id) ? 'primary' : 'outline'}
                     className="w-full"
                   >
-                    {userStatus.watchlist ? '✓ In Watchlist' : '+ Add to Watchlist'}
+                    {isInWatchlist(id) ? '✓ In Watchlist' : '+ Add to Watchlist'}
                   </Button>
                   
                   <Button
                     onClick={handleMarkWatched}
-                    variant={userStatus.watched ? 'primary' : 'outline'}
+                    variant={isWatched(id, type) ? 'primary' : 'outline'}
                     className="w-full"
                   >
                     {showEpisodeTracker ? 'Hide Episode Tracker' : 'Mark as Watched'}
@@ -344,7 +389,7 @@ function MovieShowDetailPage() {
                 </div>
 
                 {/* Rating - Only show if watched */}
-                {userStatus.watched && (
+                {isWatched(id, type) && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       My Rating
@@ -355,7 +400,7 @@ function MovieShowDetailPage() {
                           key={star}
                           onClick={() => handleRatingChange(star)}
                           className={`text-2xl transition-colors ${
-                            star <= (userStatus.rating || 0)
+                            star <= (currentRating || 0)
                               ? 'text-yellow-400'
                               : 'text-slate-300 hover:text-yellow-300'
                           }`}
@@ -368,13 +413,13 @@ function MovieShowDetailPage() {
                 )}
 
                 {/* Personal Notes - Only show if watched */}
-                {userStatus.watched && (
+                {isWatched(id, type) && (
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
                       Personal Notes
                     </label>
                     <textarea
-                      value={userStatus.notes}
+                      value={currentNotes}
                       onChange={(e) => handleNotesChange(e.target.value)}
                       placeholder="Add your personal notes about this movie/show..."
                       className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
@@ -473,12 +518,20 @@ function MovieShowDetailPage() {
                           const isFullyWatched = watchedCount === totalCount;
                           
                           setShowEpisodeTracker(false);
-                          setUserStatus(prev => ({ 
-                            ...prev, 
-                            watched: watchedCount > 0,
+                          
+                          if (watchedCount > 0) {
+                            // Add/update TV show in watched list
+                            addWatchedShow({
+                              ...mediaData,
+                              episodeProgress,
+                              watched: true
+                            });
+                            
                             // Auto-add to watchlist if not fully watched
-                            watchlist: watchedCount > 0 && !isFullyWatched ? true : prev.watchlist
-                          }));
+                            if (!isFullyWatched && !isInWatchlist(id)) {
+                              addToWatchlist(mediaData);
+                            }
+                          }
                         }}
                         variant="primary"
                         className="w-full"

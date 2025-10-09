@@ -13,7 +13,7 @@ function Header() {
   const location = useLocation();
   
   // Check if user is on authenticated pages (dashboard, profile, search, movie/TV details, etc.)
-  const authenticatedPages = ['/dashboard', '/profile', '/search', '/settings', '/help'];
+  const authenticatedPages = ['/dashboard', '/profile', '/search', '/settings', '/help', '/my-movies', '/my-shows', '/watchlist'];
   const isMovieOrTVDetail = location.pathname.match(/^\/(movie|tv)\/\d+$/);
   const isAuthenticated = authenticatedPages.some(page => location.pathname.startsWith(page)) || isMovieOrTVDetail;
   
