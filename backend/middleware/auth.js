@@ -14,11 +14,8 @@ const { config } = require('../config/config');
  */
 const authenticateToken = async (req, res, next) => {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') 
-      ? authHeader.slice(7) // Remove 'Bearer ' prefix
-      : null;
+    // Get token from HttpOnly cookie
+    const token = req.cookies.accessToken;
 
     if (!token) {
       return res.status(401).json({
@@ -81,10 +78,8 @@ const authenticateToken = async (req, res, next) => {
  */
 const optionalAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') 
-      ? authHeader.slice(7)
-      : null;
+    // Get token from HttpOnly cookie
+    const token = req.cookies.accessToken;
 
     if (!token) {
       // No token provided, continue without user

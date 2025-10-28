@@ -8,79 +8,48 @@
 // API Configuration - Frontend only needs the backend API URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : ''
-  };
-};
-
-// Global refresh state to prevent multiple simultaneous refresh attempts
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(token);
-    }
-  });
-  
-  failedQueue = [];
-};
-
-// Generic API request function with automatic token refresh
+// Generic API request function
+// HttpOnly cookies are automatically included with credentials: 'include'
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   let config = {
-    headers: getAuthHeaders(),
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    credentials: 'include', // Include HttpOnly cookies automatically
     ...options
   };
 
   try {
     let response = await fetch(url, config);
     
-    // If token expired (401), try to refresh
-    if (response.status === 401 && endpoint !== '/auth/refresh') {
-      if (isRefreshing) {
-        // If already refreshing, queue this request
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(() => {
-          // Retry with new token
-          config.headers = getAuthHeaders();
-          return fetch(url, config).then(res => res.json());
-        });
-      }
-      
-      isRefreshing = true;
-      
+    // If token expired (401), try to refresh once
+    if (response.status === 401 && endpoint !== '/auth/refresh' && endpoint !== '/auth/me') {
       try {
-        await authAPI.refreshToken();
-        isRefreshing = false;
-        processQueue(null);
+        // Try to refresh token (cookies are automatically sent and updated)
+        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include'
+        });
         
-        // Retry original request with new token
-        config.headers = getAuthHeaders();
-        response = await fetch(url, config);
+        if (refreshResponse.ok) {
+          // Retry original request (new cookie automatically included)
+          response = await fetch(url, config);
+        } else {
+          // Refresh failed, redirect to login
+          if (window.location.pathname !== '/login') {
+            window.history.pushState({}, '', '/login');
+            window.location.reload();
+          }
+          throw new Error('Session expired. Please login again.');
+        }
       } catch (refreshError) {
-        isRefreshing = false;
-        processQueue(refreshError);
-        
-        // Clear tokens and redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        
-        // Use React Router navigation instead of hard redirect
+        // Refresh failed, redirect to login
         if (window.location.pathname !== '/login') {
           window.history.pushState({}, '', '/login');
           window.location.reload();
         }
-        
         throw new Error('Session expired. Please login again.');
       }
     }
@@ -170,6 +139,7 @@ export const authAPI = {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify(userData)
       });
 
@@ -179,12 +149,7 @@ export const authAPI = {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Store tokens
-      if (data.data.accessToken && data.data.refreshToken) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
-      }
-
+      // Tokens are now in HttpOnly cookies - no need to store manually
       return data;
     } catch (error) {
       console.error('Registration error:', error);
@@ -200,6 +165,7 @@ export const authAPI = {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify({ email, password })
       });
 
@@ -209,12 +175,7 @@ export const authAPI = {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store tokens
-      if (data.data.accessToken && data.data.refreshToken) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
-      }
-
+      // Tokens are now in HttpOnly cookies - no need to store manually
       return data;
     } catch (error) {
       console.error('Login error:', error);
@@ -222,62 +183,39 @@ export const authAPI = {
     }
   },
 
-  // Refresh access token
-  refreshToken: async () => {
+  // Check authentication status
+  checkAuth: async () => {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refreshToken })
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: 'GET',
+        credentials: 'include' // Send cookies
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        // Refresh token expired or invalid, clear all tokens
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        throw new Error(data.message || 'Token refresh failed');
+        return { success: false, user: null };
       }
 
-      // Store new access token
-      if (data.data.accessToken) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-      }
-
-      return data;
+      const data = await response.json();
+      return { success: true, user: data.data.user };
     } catch (error) {
-      console.error('Token refresh error:', error);
-      throw error;
+      console.error('Check auth error:', error);
+      return { success: false, user: null };
     }
   },
 
   // Logout user
   logout: async () => {
     try {
-      // Call backend logout endpoint (optional)
+      // Call backend logout endpoint to clear cookies
       await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        credentials: 'include' // Send cookies to be cleared
       });
+      return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
-      // Continue with logout even if backend call fails
-    } finally {
-      // Always clear local storage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      return { success: true }; // Still return success even if backend fails
     }
-    
-    return { success: true };
   }
 };
 

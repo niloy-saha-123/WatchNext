@@ -102,6 +102,21 @@ router.post('/register', validateRegistration, async (req, res) => {
     // Update last login
     await user.updateLastLogin();
 
+    // Set HttpOnly cookies for tokens
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production', // Only HTTPS in production
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -112,9 +127,8 @@ router.post('/register', validateRegistration, async (req, res) => {
           email: user.email,
           memberSince: user.memberSince,
           avatar: user.avatar
-        },
-        accessToken,
-        refreshToken
+        }
+        // No tokens in response body - they're in cookies now!
       }
     });
 
@@ -174,6 +188,21 @@ router.post('/login', validateLogin, async (req, res) => {
     // Update last login
     await user.updateLastLogin();
 
+    // Set HttpOnly cookies for tokens
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -185,9 +214,8 @@ router.post('/login', validateLogin, async (req, res) => {
           memberSince: user.memberSince,
           avatar: user.avatar,
           lastLogin: user.lastLogin
-        },
-        accessToken,
-        refreshToken
+        }
+        // No tokens in response body - they're in cookies now!
       }
     });
 
@@ -203,7 +231,8 @@ router.post('/login', validateLogin, async (req, res) => {
 // POST /api/auth/refresh - Refresh access token
 router.post('/refresh', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    // Read refresh token from HttpOnly cookie
+    const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
       return res.status(400).json({
@@ -238,11 +267,18 @@ router.post('/refresh', async (req, res) => {
       { expiresIn: config.jwt.accessExpiresIn || '15m' }
     );
 
+    // Set new access token as HttpOnly cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
     res.json({
       success: true,
       message: 'Token refreshed successfully',
       data: {
-        accessToken,
         user: {
           id: user._id,
           name: user.name,
@@ -250,6 +286,7 @@ router.post('/refresh', async (req, res) => {
           memberSince: user.memberSince,
           avatar: user.avatar
         }
+        // No token in response body - it's in cookie now!
       }
     });
 
@@ -270,11 +307,49 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
-// POST /api/auth/logout - User logout (optional - mainly for server-side session cleanup)
+// GET /api/auth/me - Get current user (check authentication status)
+router.get('/me', require('../middleware/auth').authenticateToken, (req, res) => {
+  try {
+    // User is already attached to req by authenticateToken middleware
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          memberSince: req.user.memberSince,
+          avatar: req.user.avatar,
+          lastLogin: req.user.lastLogin,
+          phone: req.user.phone
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// POST /api/auth/logout - User logout (clears HttpOnly cookies)
 router.post('/logout', async (req, res) => {
   try {
-    // In a stateless JWT system, logout is mainly handled client-side
-    // by removing tokens from storage
+    // Clear HttpOnly cookies
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict'
+    });
+    
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: config.nodeEnv === 'production',
+      sameSite: 'strict'
+    });
+
     res.json({
       success: true,
       message: 'Logout successful'

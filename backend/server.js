@@ -11,6 +11,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 
 const { config, validateConfig } = require('./config/config');
 
@@ -43,6 +44,9 @@ app.use('/api/', limiter);
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Cookie parsing middleware
+app.use(cookieParser());
 
 // Health check endpoint
 app.get('/health', (req, res) => {

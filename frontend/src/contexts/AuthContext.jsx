@@ -9,6 +9,7 @@ import { authAPI } from '../services/apiClient';
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -29,25 +30,13 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
-      const refreshToken = localStorage.getItem('refreshToken');
-
-      if (!accessToken || !refreshToken) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Try to refresh token to get current user data
-      try {
-        const response = await authAPI.refreshToken();
-        if (response.data.user) {
-          setUser(response.data.user);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        // Token refresh failed, clear storage
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+      // Check auth status via API (cookies are sent automatically)
+      const response = await authAPI.checkAuth();
+      
+      if (response.success && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+      } else {
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -106,15 +95,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await authAPI.logout();
+      await authAPI.logout(); // Backend will clear HttpOnly cookies
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       // Always clear state regardless of API call result
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      // No need to clear localStorage - cookies are cleared by backend
     }
   };
 
