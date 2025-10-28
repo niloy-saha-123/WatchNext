@@ -40,30 +40,40 @@ const config = {
   // CORS Configuration
   cors: {
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      
-      // Allow localhost on any port for development
-      if (origin.match(/^http:\/\/localhost:\d+$/)) {
-        return callback(null, true);
+      // SECURITY: Reject requests without Origin header
+      // This blocks curl, Postman, and other non-browser tools
+      if (!origin) {
+        return callback(new Error('Origin header required'));
       }
       
-      // Allow specific origins from environment variable
+      // Define allowed origins
       const allowedOrigins = process.env.CORS_ORIGIN ? 
         process.env.CORS_ORIGIN.split(',') : 
         ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000'];
       
+      // In development: Allow localhost origins only
+      if (config.nodeEnv === 'development') {
+        // Allow any localhost port for development flexibility
+        if (origin.match(/^http:\/\/localhost:\d+$/)) {
+          return callback(null, true);
+        }
+        
+        // Also allow explicitly whitelisted origins
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        
+        // Reject all other origins in development too
+        return callback(new Error('Not allowed by CORS'));
+      }
+      
+      // In production: Strict whitelist only
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       
-      // In production, might want to be more restrictive
-      if (config.nodeEnv === 'production') {
-        return callback(new Error('Not allowed by CORS'));
-      }
-      
-      // Allow any origin in development (for flexibility)
-      return callback(null, true);
+      // Reject everything else
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   },
