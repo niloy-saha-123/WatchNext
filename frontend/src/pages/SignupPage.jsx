@@ -9,6 +9,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AuthLayout } from '../components/layout';
 import { Input } from '../components/forms';
+import DatePicker from '../components/forms/DatePicker';
 import { Button } from '../components/common';
 
 function SignupPage() {
@@ -22,6 +23,9 @@ function SignupPage() {
   });
   
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const { register, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,6 +53,48 @@ function SignupPage() {
         ...prev,
         [name]: ''
       }));
+    }
+  };
+
+  // Calculate age from birthday
+  const calculateAge = (birthday) => {
+    if (!birthday) return null;
+    
+    const today = new Date();
+    const birthDate = new Date(birthday);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  // Check if age is less than 13
+  const isAgeBelow13 = formData.birthday && calculateAge(formData.birthday) < 13;
+
+  // Handle password visibility - only one can be visible at a time
+  const togglePasswordVisibility = () => {
+    if (!showPassword) {
+      // Show password, hide confirm
+      setShowPassword(true);
+      setShowConfirmPassword(false);
+    } else {
+      // Hide password
+      setShowPassword(false);
+    }
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    if (!showConfirmPassword) {
+      // Show confirm password, hide password
+      setShowConfirmPassword(true);
+      setShowPassword(false);
+    } else {
+      // Hide confirm password
+      setShowConfirmPassword(false);
     }
   };
 
@@ -197,6 +243,8 @@ function SignupPage() {
               required
               error={errors.password}
               showPasswordToggle={true}
+              isPasswordVisible={showPassword}
+              onPasswordToggle={togglePasswordVisibility}
             />
           </div>
           
@@ -276,14 +324,15 @@ function SignupPage() {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
-            error={errors.confirmPassword || (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && formData.confirmPassword.length > 0 ? 'Passwords do not match' : '')}
+            error={errors.confirmPassword || (formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : '')}
             showPasswordToggle={true}
+            isPasswordVisible={showConfirmPassword}
+            onPasswordToggle={toggleConfirmPasswordVisibility}
           />
         </div>
 
         <div>
-          <Input
-            type="date"
+          <DatePicker
             id="birthday"
             name="birthday"
             label="Birthday (Must be 13+ years old)"
@@ -292,8 +341,9 @@ function SignupPage() {
             required
             error={errors.birthday}
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className={`text-xs mt-1 ${isAgeBelow13 ? 'text-red-400 font-semibold' : 'text-gray-400'}`}>
             You must be at least 13 years old to create an account
+            {isAgeBelow13 && ' - Your age is below 13'}
           </p>
         </div>
 

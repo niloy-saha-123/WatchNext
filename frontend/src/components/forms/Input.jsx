@@ -3,7 +3,7 @@
  * @path /Users/niloysaha/IdeaProjects/WatchNext/frontend/src/components/forms/Input.jsx
  * @description Reusable input component with password visibility toggle, validation, and modern UI.
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { LoadingSpinner } from '../common';
 
 function Input({ 
@@ -18,10 +18,13 @@ function Input({
   className = '',
   name,
   loading = false,
-  showPasswordToggle = false // New prop for password fields
+  showPasswordToggle = false,
+  // External password visibility state (optional)
+  isPasswordVisible = false,
+  onPasswordToggle = null
 }) {
-  // Handle password visibility toggle
-  const [showPassword, setShowPassword] = useState(false);
+  // Use external state if provided, otherwise manage internally
+  const showPassword = showPasswordToggle && isPasswordVisible !== undefined ? isPasswordVisible : false;
   const displayType = showPasswordToggle ? (showPassword ? 'text' : 'password') : type;
 
   const inputStyles = `
@@ -35,6 +38,12 @@ function Input({
     ${className}
     ${showPasswordToggle ? 'pr-12' : ''}
   `.trim();
+
+  const handleToggle = () => {
+    if (onPasswordToggle) {
+      onPasswordToggle(); // Use external handler
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -63,7 +72,7 @@ function Input({
         {showPasswordToggle && (
           <button
             type="button"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={handleToggle}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
