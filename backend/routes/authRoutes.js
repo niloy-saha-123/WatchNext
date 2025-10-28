@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { config } = require('../config/config');
+const { addToBlacklist, isBlacklisted } = require('../utils/tokenBlacklist');
 
 const router = express.Router();
 
@@ -241,6 +242,14 @@ router.post('/refresh', async (req, res) => {
       });
     }
 
+    // Check if refresh token is blacklisted (user logged out)
+    if (isBlacklisted(refreshToken)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token has been revoked'
+      });
+    }
+
     // Verify refresh token
     const decoded = jwt.verify(refreshToken, config.jwt.secret);
     
@@ -334,10 +343,22 @@ router.get('/me', require('../middleware/auth').authenticateToken, (req, res) =>
   }
 });
 
-// POST /api/auth/logout - User logout (clears HttpOnly cookies)
+// POST /api/auth/logout - User logout (clears HttpOnly cookies and blacklists tokens)
 router.post('/logout', async (req, res) => {
   try {
-    // Clear HttpOnly cookies
+    // Get tokens from cookies before clearing
+    const accessToken = req.cookies.accessToken;
+    const refreshToken = req.cookies.refreshToken;
+    
+    // Add tokens to blacklist to invalidate them immediately
+    if (accessToken) {
+      addToBlacklist(accessToken, 15 * 60 * 1000); // 15 minutes
+    }
+    if (refreshToken) {
+      addToBlacklist(refreshToken, 7 * 24 * 60 * 60 * 1000); // 7 days
+    }
+    
+    // Clear HttpOnly cookies from browser
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: config.nodeEnv === 'production',

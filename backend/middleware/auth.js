@@ -7,6 +7,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { config } = require('../config/config');
+const { isBlacklisted } = require('../utils/tokenBlacklist');
 
 /**
  * Middleware to authenticate JWT tokens
@@ -21,6 +22,14 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: 'Access token is required'
+      });
+    }
+
+    // Check if token is blacklisted (user logged out)
+    if (isBlacklisted(token)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token has been revoked'
       });
     }
 
@@ -83,6 +92,12 @@ const optionalAuth = async (req, res, next) => {
 
     if (!token) {
       // No token provided, continue without user
+      req.user = null;
+      return next();
+    }
+
+    // Check if token is blacklisted
+    if (isBlacklisted(token)) {
       req.user = null;
       return next();
     }
