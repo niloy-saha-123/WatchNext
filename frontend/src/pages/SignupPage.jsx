@@ -69,8 +69,16 @@ function SignupPage() {
     }
     
     // Password validation
-    if (formData.password && formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    if (formData.password) {
+      if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      } else if (!/(?=.*[a-z])/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one lowercase letter';
+      } else if (!/(?=.*[A-Z])/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one uppercase letter';
+      } else if (!/(?=.*\d)/.test(formData.password)) {
+        newErrors.password = 'Password must contain at least one number';
+      }
     }
     
     // Password confirmation
@@ -176,7 +184,7 @@ function SignupPage() {
           error={errors.email}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
           <Input
             type="password"
             id="password"
@@ -188,30 +196,62 @@ function SignupPage() {
             required
             error={errors.password}
           />
-
-          <Input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            label="Confirm Password"
-            placeholder="Confirm password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            error={errors.confirmPassword}
-          />
+          
+          {/* Password Requirements */}
+          {formData.password && (
+            <div className="mt-2 text-xs space-y-1">
+              <p className="text-gray-400 mb-2">Password must include:</p>
+              <div className="flex items-center gap-2">
+                <span className={formData.password.length >= 8 ? 'text-green-400' : 'text-gray-400'}>
+                  ✓ 8+ characters
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={/(?=.*[a-z])/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
+                  ✓ Lowercase letter
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={/(?=.*[A-Z])/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
+                  ✓ Uppercase letter
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={/(?=.*\d)/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
+                  ✓ One number
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         <Input
-          type="date"
-          id="birthday"
-          name="birthday"
-          label="Birthday"
-          value={formData.birthday}
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Confirm Password"
+          placeholder="Confirm password"
+          value={formData.confirmPassword}
           onChange={handleChange}
           required
-          error={errors.birthday}
+          error={errors.confirmPassword}
         />
+
+        <div>
+          <Input
+            type="date"
+            id="birthday"
+            name="birthday"
+            label="Birthday (Must be 13+ years old)"
+            value={formData.birthday}
+            onChange={handleChange}
+            required
+            error={errors.birthday}
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            You must be at least 13 years old to create an account
+          </p>
+        </div>
 
         <Input
           type="tel"
