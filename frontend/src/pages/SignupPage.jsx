@@ -185,57 +185,101 @@ function SignupPage() {
         />
 
         <div>
-          <Input
-            type="password"
-            id="password"
-            name="password"
-            label="Password"
-            placeholder="Create password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            error={errors.password}
-          />
+          <div className="relative">
+            <Input
+              type="password"
+              id="password"
+              name="password"
+              label="Password"
+              placeholder="Create password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              error={errors.password}
+              showPasswordToggle={true}
+            />
+          </div>
           
-          {/* Password Requirements */}
+          {/* Password Requirements with better styling */}
           {formData.password && (
-            <div className="mt-2 text-xs space-y-1">
-              <p className="text-gray-400 mb-2">Password must include:</p>
-              <div className="flex items-center gap-2">
-                <span className={formData.password.length >= 8 ? 'text-green-400' : 'text-gray-400'}>
-                  ✓ 8+ characters
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={/(?=.*[a-z])/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
-                  ✓ Lowercase letter
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={/(?=.*[A-Z])/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
-                  ✓ Uppercase letter
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className={/(?=.*\d)/.test(formData.password) ? 'text-green-400' : 'text-gray-400'}>
-                  ✓ One number
-                </span>
+            <div className="mt-3 p-3 bg-slate-800/20 rounded-lg border border-slate-700/30">
+              <p className="text-xs font-medium text-slate-300 mb-2">Password requirements:</p>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  {formData.password.length >= 8 ? (
+                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className={`text-xs ${formData.password.length >= 8 ? 'text-green-400' : 'text-red-400'}`}>
+                    At least 8 characters
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/(?=.*[a-z])/.test(formData.password) ? (
+                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className={`text-xs ${/(?=.*[a-z])/.test(formData.password) ? 'text-green-400' : 'text-red-400'}`}>
+                    At least 1 lowercase letter
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/(?=.*[A-Z])/.test(formData.password) ? (
+                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className={`text-xs ${/(?=.*[A-Z])/.test(formData.password) ? 'text-green-400' : 'text-red-400'}`}>
+                    At least 1 uppercase letter
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/(?=.*\d)/.test(formData.password) ? (
+                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className={`text-xs ${/(?=.*\d)/.test(formData.password) ? 'text-green-400' : 'text-red-400'}`}>
+                    At least 1 number
+                  </span>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <Input
-          type="password"
-          id="confirmPassword"
-          name="confirmPassword"
-          label="Confirm Password"
-          placeholder="Confirm password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-          error={errors.confirmPassword}
-        />
+        <div>
+          <Input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            label="Confirm Password"
+            placeholder="Confirm password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+            error={errors.confirmPassword || (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && formData.confirmPassword.length > 0 ? 'Passwords do not match' : '')}
+            showPasswordToggle={true}
+          />
+        </div>
 
         <div>
           <Input
