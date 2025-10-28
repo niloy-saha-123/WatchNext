@@ -18,6 +18,8 @@ function LoginPage() {
   });
   
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,6 +48,10 @@ function LoginPage() {
         [name]: ''
       }));
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e) => {
@@ -114,6 +120,9 @@ function LoginPage() {
           onChange={handleChange}
           required
           error={errors.password}
+          showPasswordToggle={true}
+          isPasswordVisible={showPassword}
+          onPasswordToggle={togglePasswordVisibility}
         />
 
         <div className="flex items-center justify-between">
