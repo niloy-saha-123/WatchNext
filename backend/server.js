@@ -79,6 +79,7 @@ connectDB();
 // API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/media', require('./routes/mediaRoutes'));
+app.use('/api/watch', require('./routes/watchRoutes'));
 
 // API documentation endpoint
 app.get('/api', (req, res) => {

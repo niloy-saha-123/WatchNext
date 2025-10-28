@@ -243,9 +243,74 @@ export const profileAPI = {
   }
 };
 
+// Watch API - for user watch data
+export const watchAPI = {
+  // Watch History (Movies & TV Shows)
+  getHistory: async () => {
+    return apiRequest('/watch/history');
+  },
+
+  addToHistory: async (mediaData) => {
+    return apiRequest('/watch/history', {
+      method: 'POST',
+      body: JSON.stringify(mediaData)
+    });
+  },
+
+  updateHistory: async (id, updates) => {
+    return apiRequest(`/watch/history/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+
+  removeFromHistory: async (id) => {
+    return apiRequest(`/watch/history/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Watchlist
+  getWatchlist: async () => {
+    return apiRequest('/watch/watchlist');
+  },
+
+  addToWatchlist: async (itemData) => {
+    return apiRequest('/watch/watchlist', {
+      method: 'POST',
+      body: JSON.stringify(itemData)
+    });
+  },
+
+  removeFromWatchlist: async (id) => {
+    return apiRequest(`/watch/watchlist/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  // Episode Progress
+  getEpisodeProgress: async () => {
+    return apiRequest('/watch/progress');
+  },
+
+  updateEpisodeProgress: async (progressData) => {
+    return apiRequest('/watch/progress', {
+      method: 'POST',
+      body: JSON.stringify(progressData)
+    });
+  },
+
+  removeEpisodeProgress: async (id) => {
+    return apiRequest(`/watch/progress/${id}`, {
+      method: 'DELETE'
+    });
+  }
+};
+
 export default {
   mediaAPI,
   userStatsAPI,
   authAPI,
-  profileAPI
+  profileAPI,
+  watchAPI
 };
