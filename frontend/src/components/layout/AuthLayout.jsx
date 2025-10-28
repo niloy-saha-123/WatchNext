@@ -18,7 +18,7 @@ function AuthLayout({ children, title, subtitle }) {
           {/* Logo Header */}
           <div className="text-center">
             <Link to="/" className="inline-block">
-              <h1 className="text-4xl font-black text-white hover:text-orange-400 transition-all duration-300 tracking-tight">
+              <h1 className="text-5xl font-black text-white hover:text-orange-400 transition-all duration-300 tracking-tight">
                 <span className="bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent font-brand">
                   Watch
                 </span>

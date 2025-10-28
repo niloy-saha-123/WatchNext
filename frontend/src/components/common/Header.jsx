@@ -18,8 +18,8 @@ function Header() {
   const isMovieOrTVDetail = location.pathname.match(/^\/(movie|tv)\/\d+$/);
   const isAuthenticated = authenticatedPages.some(page => location.pathname.startsWith(page)) || isMovieOrTVDetail;
   
-  // Use white background for authenticated pages
-  const useWhiteBackground = isAuthenticated;
+  // Use clean white theme for authenticated pages
+  const useCleanTheme = isAuthenticated;
   
   // Determine button theme based on page type
   const buttonTheme = isAuthenticated ? 'orange' : 'red';
@@ -27,18 +27,18 @@ function Header() {
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b ${
-        useWhiteBackground 
-          ? 'bg-white/90 border-slate-200' 
+        useCleanTheme 
+          ? 'bg-white/95 border-gray-200' 
           : 'bg-slate-900/80 border-slate-700'
       }`}
     >
       <div className="container mx-auto px-4 h-16 flex items-center gap-6">
         {/* Logo */}
-        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-2xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
-          <span className={useWhiteBackground ? 'text-orange-500' : 'bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent'}>
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
+          <span className={useCleanTheme ? 'text-red-600' : 'bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent'}>
             Watch
           </span>
-          <span className={useWhiteBackground ? 'text-slate-900' : 'text-white'}>Next</span>
+          <span className={useCleanTheme ? 'text-gray-900' : 'text-white'}>Next</span>
         </Link>
 
         {/* Spacer */}

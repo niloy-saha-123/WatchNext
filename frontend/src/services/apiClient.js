@@ -17,6 +17,22 @@ const getAuthHeaders = () => {
   };
 };
 
+// Global refresh state to prevent multiple simultaneous refresh attempts
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 // Generic API request function with automatic token refresh
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -30,16 +46,41 @@ const apiRequest = async (endpoint, options = {}) => {
     
     // If token expired (401), try to refresh
     if (response.status === 401 && endpoint !== '/auth/refresh') {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(() => {
+          // Retry with new token
+          config.headers = getAuthHeaders();
+          return fetch(url, config).then(res => res.json());
+        });
+      }
+      
+      isRefreshing = true;
+      
       try {
         await authAPI.refreshToken();
-        // Retry with new token
+        isRefreshing = false;
+        processQueue(null);
+        
+        // Retry original request with new token
         config.headers = getAuthHeaders();
         response = await fetch(url, config);
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        isRefreshing = false;
+        processQueue(refreshError);
+        
+        // Clear tokens and redirect to login
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        
+        // Use React Router navigation instead of hard redirect
+        if (window.location.pathname !== '/login') {
+          window.history.pushState({}, '', '/login');
+          window.location.reload();
+        }
+        
         throw new Error('Session expired. Please login again.');
       }
     }
