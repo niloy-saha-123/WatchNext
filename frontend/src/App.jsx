@@ -2,13 +2,14 @@
  * @file App.jsx
  * @path /frontend/src/App.jsx
  * @description Root component with React Router configuration.
- * Handles navigation between HomePage, LoginPage, and SignupPage.
- * Will be expanded to include protected routes and authentication state management.
+ * Implements protected routes for authenticated pages and public routes for login/signup.
+ * All user-specific pages require authentication.
  */
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { WatchDataProvider } from './contexts/WatchDataContext';
+import { ProtectedRoute, PublicRoute } from './components/routes';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -19,28 +20,93 @@ import MovieShowDetailPage from './pages/MovieShowDetailPage';
 import MyMoviesPage from './pages/MyMoviesPage';
 import MyShowsPage from './pages/MyShowsPage';
 import WatchlistPage from './pages/WatchlistPage';
-// import LoadingDemo from './components/common/LoadingDemo'; // Keep for reference - DO NOT USE IN PRODUCTION
-import './index.css'; // Ensure global styles and Tailwind are imported
+import './index.css';
 
 function App() {
   return (
     <AuthProvider>
       <WatchDataProvider>
         <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/search" element={<SearchResultsPage />} />
-          <Route path="/my-movies" element={<MyMoviesPage />} />
-          <Route path="/my-shows" element={<MyShowsPage />} />
-          <Route path="/watchlist" element={<WatchlistPage />} />
-          <Route path="/:type/:id" element={<MovieShowDetailPage />} />
-          {/* <Route path="/demo" element={<LoadingDemo />} /> */} {/* REFERENCE ONLY - Uncomment for LoadingSpinner demos */}
-          {/* TODO: Add more routes like profile, settings, etc. */}
-        </Routes>
+          <Routes>
+            {/* Public Routes - Accessible to everyone */}
+            <Route path="/" element={<HomePage />} />
+            
+            {/* Auth Routes - Redirect to dashboard if already logged in */}
+            <Route 
+              path="/login" 
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              } 
+            />
+            <Route 
+              path="/signup" 
+              element={
+                <PublicRoute>
+                  <SignupPage />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Protected Routes - Require authentication */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/search" 
+              element={
+                <ProtectedRoute>
+                  <SearchResultsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/my-movies" 
+              element={
+                <ProtectedRoute>
+                  <MyMoviesPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/my-shows" 
+              element={
+                <ProtectedRoute>
+                  <MyShowsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/watchlist" 
+              element={
+                <ProtectedRoute>
+                  <WatchlistPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/:type/:id" 
+              element={
+                <ProtectedRoute>
+                  <MovieShowDetailPage />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
         </Router>
       </WatchDataProvider>
     </AuthProvider>

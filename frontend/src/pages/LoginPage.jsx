@@ -5,7 +5,7 @@
  * Includes email/password authentication with smooth transitions and validation.
  */
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AuthLayout } from '../components/layout';
 import { Input } from '../components/forms';
@@ -20,13 +20,17 @@ function LoginPage() {
   const [errors, setErrors] = useState({});
   const { login, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the page user was trying to access before being redirected to login
+  const from = location.state?.from?.pathname || '/dashboard';
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, from]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,8 +68,8 @@ function LoginPage() {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        // Redirect to dashboard on successful login
-        navigate('/dashboard');
+        // Redirect to the page user was trying to access, or dashboard by default
+        navigate(from, { replace: true });
       } else {
         setErrors({ general: result.error || 'Login failed. Please try again.' });
       }

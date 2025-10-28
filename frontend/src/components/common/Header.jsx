@@ -2,26 +2,24 @@
  * @file Header.jsx
  * @path frontend/src/components/common/Header.jsx
  * @description Main navigation header component for the application.
- * Semi-transparent fixed header with logo and authentication buttons.
+ * Semi-transparent fixed header with logo, search, and authentication controls.
+ * Uses actual authentication state from AuthContext for security.
  */
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '.';
 import ProfileDropdown from './ProfileDropdown';
 import SearchInput from './SearchInput';
+import { useAuth } from '../../contexts/AuthContext';
 
 function Header() {
-  const location = useLocation();
+  // Use actual authentication state from context
+  const { isAuthenticated } = useAuth();
   
-  // Check if user is on authenticated pages (dashboard, profile, search, movie/TV details, etc.)
-  const authenticatedPages = ['/dashboard', '/profile', '/search', '/settings', '/help', '/my-movies', '/my-shows', '/watchlist'];
-  const isMovieOrTVDetail = location.pathname.match(/^\/(movie|tv)\/\d+$/);
-  const isAuthenticated = authenticatedPages.some(page => location.pathname.startsWith(page)) || isMovieOrTVDetail;
-  
-  // Use clean white theme for authenticated pages
+  // Use clean white theme for authenticated users
   const useCleanTheme = isAuthenticated;
   
-  // Determine button theme based on page type
+  // Determine button theme based on authentication status
   const buttonTheme = isAuthenticated ? 'orange' : 'red';
   
   return (
