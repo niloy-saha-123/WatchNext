@@ -4,11 +4,13 @@
  * Only works in development mode
  */
 
+import { authAPI } from '../services/apiClient';
+
 /**
  * Auto-create and login with a test account for development
  * Test account credentials from environment variables
  */
-export const createTestAccount = async (authAPI) => {
+export const createTestAccount = async (api = authAPI) => {
   // Only work in development
   if (import.meta.env.MODE !== 'development') {
     console.warn('Test account creation only works in development mode');
@@ -21,7 +23,7 @@ export const createTestAccount = async (authAPI) => {
   try {
     // Try to login first (in case account already exists)
     console.log('🔧 Attempting to login with test account...');
-    const loginResult = await authAPI.login(testEmail, testPassword);
+    const loginResult = await api.login(testEmail, testPassword);
 
     if (loginResult.success && loginResult.data?.user) {
       console.log('✅ Logged in with existing test account');
@@ -36,7 +38,7 @@ export const createTestAccount = async (authAPI) => {
   try {
     // Create test account
     console.log('📝 Creating new test account...');
-    const signupResult = await authAPI.register({
+    const signupResult = await api.register({
       name: 'Dev User',
       email: testEmail,
       password: testPassword,
@@ -67,12 +69,14 @@ export const quickDevLogin = async (authAPI) => {
     return;
   }
 
-  await createTestAccount(authAPI);
+  await createTestAccount(authAPI || undefined);
 };
 
 // Make it accessible from browser console in development
 if (import.meta.env.MODE === 'development' && typeof window !== 'undefined') {
-  window.quickDevLogin = quickDevLogin;
-  console.log('💡 Dev Tip: Run quickDevLogin() in console for instant test account login');
+  window.quickDevLogin = () => quickDevLogin();
+  window.enableDevAutoLogin = () => localStorage.setItem('devAutoLogin', 'true');
+  window.disableDevAutoLogin = () => localStorage.removeItem('devAutoLogin');
+  console.log('💡 Dev Tips: quickDevLogin(), enableDevAutoLogin(), disableDevAutoLogin()');
 }
 

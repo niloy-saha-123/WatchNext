@@ -20,11 +20,8 @@ function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  // DEVELOPMENT MODE: Allow access to all pages for testing
-  const isDevelopment = import.meta.env.MODE === 'development';
-
   // Show loading spinner while checking authentication status
-  if (isLoading && !isDevelopment) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
@@ -35,12 +32,7 @@ function ProtectedRoute({ children }) {
     );
   }
 
-  // DEVELOPMENT MODE: Always allow access (bypass authentication check)
-  if (isDevelopment) {
-    return children;
-  }
-
-  // Redirect to login if not authenticated (PRODUCTION ONLY)
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
