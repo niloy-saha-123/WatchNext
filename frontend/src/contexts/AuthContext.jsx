@@ -6,6 +6,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/apiClient';
+import { createTestAccount } from '../utils/devAuthHelper';
 
 const AuthContext = createContext();
 
@@ -36,9 +37,24 @@ export const AuthProvider = ({ children }) => {
       if (response.success && response.user) {
         setUser(response.user);
         setIsAuthenticated(true);
+        setIsLoading(false); // Set loading to false here
       } else {
-        setUser(null);
-        setIsAuthenticated(false);
+        // Auto-create test account in development mode if not authenticated
+        if (import.meta.env.MODE === 'development') {
+          console.log('🔧 Development mode: Auto-creating test account...');
+          const testAccount = await createTestAccount(authAPI);
+          if (testAccount.success && testAccount.user) {
+            // Use the user data directly from test account creation
+            setUser(testAccount.user);
+            setIsAuthenticated(true);
+          } else {
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       }
     } catch (error) {
       console.error('Auth status check error:', error);
