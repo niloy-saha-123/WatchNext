@@ -5,6 +5,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createTestAccount } from '../utils/devAuthHelper';
 import { authAPI } from '../services/apiClient';
 
 const AuthContext = createContext();
@@ -23,26 +24,9 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  // In development mode, auto-authenticate for testing
-  const isDevelopment = import.meta.env.MODE === 'development';
-
   const checkAuthStatus = useCallback(async () => {
     try {
-      // In development mode, always set to authenticated
-      if (isDevelopment) {
-        setUser({ 
-          id: 'dev-user', 
-          name: 'Dev User', 
-          email: 'dev@watchnext.com',
-          memberSince: new Date(),
-          isDev: true 
-        });
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
-      }
-
-      // In production: Check auth status via API (cookies are sent automatically)
+      // Check auth status via API (cookies are sent automatically)
       const response = await authAPI.checkAuth();
       
       if (response.success && response.user) {
@@ -51,6 +35,22 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setIsAuthenticated(false);
+
+        // Dev-only optional auto-login (toggle via localStorage.devAutoLogin = 'true')
+        if (import.meta.env.MODE === 'development' && localStorage.getItem('devAutoLogin') === 'true') {
+          try {
+            const result = await createTestAccount(authAPI);
+            if (result?.success) {
+              const recheck = await authAPI.checkAuth();
+              if (recheck.success && recheck.user) {
+                setUser(recheck.user);
+                setIsAuthenticated(true);
+              }
+            }
+          } catch {
+            // ignore dev auto-login errors
+          }
+        }
       }
     } catch (error) {
       console.error('Auth status check error:', error);
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [isDevelopment]);
+  }, []);
 
   // Check if user is logged in on app start
   useEffect(() => {
