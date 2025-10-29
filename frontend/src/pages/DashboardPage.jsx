@@ -17,14 +17,45 @@ function DashboardPage() {
   const [trending, setTrending] = useState([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
 
-  // Fetch trending content
+  // Fetch trending content with 1-week caching
   useEffect(() => {
     const fetchTrending = async () => {
       try {
+        // Check cache first
+        const cacheKey = 'trending_content';
+        const cacheExpiry = 7 * 24 * 60 * 60 * 1000; // 1 week in ms
+        const cached = localStorage.getItem(cacheKey);
+        
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          const age = Date.now() - timestamp;
+          
+          if (age < cacheExpiry) {
+            // Cache is still valid
+            setTrending(data);
+            setLoadingTrending(false);
+            return;
+          }
+        }
+        
+        // Fetch fresh data from API
         const data = await mediaAPI.getTrending('all', 'week');
-        setTrending(data.results?.slice(0, 12) || []);
+        const results = data.results?.slice(0, 12) || [];
+        setTrending(results);
+        
+        // Cache for 1 week
+        localStorage.setItem(cacheKey, JSON.stringify({
+          data: results,
+          timestamp: Date.now()
+        }));
       } catch (error) {
         console.error('Error fetching trending:', error);
+        // Try to use cached data if API fails
+        const cached = localStorage.getItem('trending_content');
+        if (cached) {
+          const { data } = JSON.parse(cached);
+          setTrending(data);
+        }
       } finally {
         setLoadingTrending(false);
       }
@@ -117,7 +148,7 @@ function DashboardPage() {
               <section className="mb-12">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-3xl font-bold text-gray-900">Trending Now</h2>
-                  <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Updated daily</span>
+                  <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Updated weekly</span>
                 </div>
 
                 {loadingTrending ? (

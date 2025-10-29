@@ -4,9 +4,8 @@
  * @description Authentication context for managing user state and authentication
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI } from '../services/apiClient';
-import { createTestAccount } from '../utils/devAuthHelper';
 
 const AuthContext = createContext();
 
@@ -23,38 +22,35 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // In development mode, auto-authenticate for testing
+  const isDevelopment = import.meta.env.MODE === 'development';
 
-  // Check if user is logged in on app start
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
-      // Check auth status via API (cookies are sent automatically)
+      // In development mode, always set to authenticated
+      if (isDevelopment) {
+        setUser({ 
+          id: 'dev-user', 
+          name: 'Dev User', 
+          email: 'dev@watchnext.com',
+          memberSince: new Date(),
+          isDev: true 
+        });
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // In production: Check auth status via API (cookies are sent automatically)
       const response = await authAPI.checkAuth();
       
       if (response.success && response.user) {
         setUser(response.user);
         setIsAuthenticated(true);
-        setIsLoading(false); // Set loading to false here
       } else {
-        // Auto-create test account in development mode if not authenticated
-        if (import.meta.env.MODE === 'development') {
-          console.log('🔧 Development mode: Auto-creating test account...');
-          const testAccount = await createTestAccount(authAPI);
-          if (testAccount.success && testAccount.user) {
-            // Use the user data directly from test account creation
-            setUser(testAccount.user);
-            setIsAuthenticated(true);
-          } else {
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Auth status check error:', error);
@@ -63,7 +59,12 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isDevelopment]);
+
+  // Check if user is logged in on app start
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   const login = async (email, password) => {
     try {
@@ -137,7 +138,9 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
-    checkAuthStatus
+    checkAuthStatus,
+    setUser,
+    setIsAuthenticated
   };
 
   return (

@@ -28,7 +28,8 @@ function SearchInput({
 
   // Debounced search function
   const performSearch = async (query) => {
-    if (!query.trim() || query.length < 2) {
+    // Require at least 3 characters to reduce API calls
+    if (!query.trim() || query.length < 3) {
       setSearchResults([]);
       setShowDropdownResults(false);
       return;
@@ -79,10 +80,10 @@ function SearchInput({
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // Set new timeout for debounced search
+    // Set new timeout for debounced search (increased to 800ms to reduce API calls)
     searchTimeoutRef.current = setTimeout(() => {
       performSearch(query);
-    }, 300);
+    }, 800);
   };
 
   // Handle Enter key press - go directly to search page

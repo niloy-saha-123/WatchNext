@@ -19,6 +19,13 @@ import { LoadingSpinner } from '../common';
  */
 function PublicRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const isDevelopment = import.meta.env.MODE === 'development';
+
+  // In development mode, always allow access to login/signup pages
+  // Don't wait for loading or check authentication
+  if (isDevelopment) {
+    return children;
+  }
 
   // Show loading spinner while checking authentication status
   if (isLoading) {
@@ -32,7 +39,7 @@ function PublicRoute({ children }) {
     );
   }
 
-  // Redirect to dashboard if already authenticated
+  // In production: Redirect to dashboard if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }

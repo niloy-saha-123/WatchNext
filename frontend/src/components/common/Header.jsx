@@ -6,33 +6,41 @@
  * Uses actual authentication state from AuthContext for security.
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '.';
 import ProfileDropdown from './ProfileDropdown';
 import SearchInput from './SearchInput';
 import { useAuth } from '../../contexts/AuthContext';
 
 function Header() {
-  // Use actual authentication state from context
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
   
+  // Check if current route is a protected/authenticated page
+  const isProtectedRoute = location.pathname !== '/' && 
+                           location.pathname !== '/login' && 
+                           location.pathname !== '/signup';
+  
+  // In development mode, show authenticated UI on protected routes
+  const showAuthenticatedUI = import.meta.env.MODE === 'development' ? isProtectedRoute : isAuthenticated;
+  
   // Use clean white theme for authenticated users
-  const useCleanTheme = isAuthenticated;
+  const useCleanTheme = showAuthenticatedUI;
   
   // Determine button theme based on authentication status
-  const buttonTheme = isAuthenticated ? 'orange' : 'red';
+  const buttonTheme = showAuthenticatedUI ? 'orange' : 'red';
   
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b ${
         useCleanTheme 
-          ? 'bg-white/95 border-gray-200' 
+          ? 'bg-white border-gray-200' 
           : 'bg-slate-900/80 border-slate-700'
       }`}
     >
       <div className="container mx-auto px-4 h-16 flex items-center gap-6">
         {/* Logo */}
-        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
+        <Link to={showAuthenticatedUI ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
           <span className={useCleanTheme ? 'text-red-600' : 'bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent'}>
             Watch
           </span>
@@ -43,7 +51,7 @@ function Header() {
         <div className="flex-1" />
 
         {/* Search Bar - Only on authenticated pages */}
-        {isAuthenticated && (
+        {showAuthenticatedUI && (
           <div className="flex-1 max-w-2xl mx-auto">
             <SearchInput
               placeholder="Search..."
@@ -59,7 +67,7 @@ function Header() {
 
         {/* Action Buttons */}
         <nav className="flex items-center gap-4 flex-shrink-0" role="navigation" aria-label="Main navigation">
-          {isAuthenticated ? (
+          {showAuthenticatedUI ? (
             // Authenticated pages navigation - profile menu
             <ProfileDropdown />
           ) : (

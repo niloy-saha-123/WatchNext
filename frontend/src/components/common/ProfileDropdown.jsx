@@ -60,7 +60,7 @@ function ProfileDropdown({ user = null }) {
       {/* Profile Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-slate-50 transition-all duration-300 group"
+        className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-gray-100 transition-all duration-300 group"
         aria-label="Open profile menu"
         aria-expanded={isOpen}
       >
@@ -81,13 +81,13 @@ function ProfileDropdown({ user = null }) {
         
         {/* User Info - Hidden on mobile */}
         <div className="text-left hidden lg:block">
-          <p className="text-sm font-semibold text-slate-900 group-hover:text-slate-700 transition-colors">{currentUser.name}</p>
-          <p className="text-xs text-slate-500">{currentUser.email}</p>
+          <p className="text-sm font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">{currentUser.name}</p>
+          <p className="text-xs text-gray-500">{currentUser.email}</p>
         </div>
         
         {/* Dropdown Arrow */}
         <svg 
-          className={`w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-600 ${
+          className={`w-4 h-4 text-gray-500 transition-all duration-200 group-hover:text-gray-700 ${
             isOpen ? 'rotate-180' : ''
           }`} 
           fill="none" 

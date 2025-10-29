@@ -56,6 +56,21 @@ const FEATURED_TV_IDS = [
  */
 export const getFeaturedContent = async () => {
   try {
+    // Check cache first (2 weeks)
+    const cacheKey = 'featured_content';
+    const cacheExpiry = 14 * 24 * 60 * 60 * 1000; // 2 weeks in ms
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      const age = Date.now() - timestamp;
+      
+      if (age < cacheExpiry) {
+        // Cache is still valid
+        return data;
+      }
+    }
+    
     // Use the backend API to get featured content
     const data = await mediaAPI.getFeatured();
     
@@ -82,14 +97,30 @@ export const getFeaturedContent = async () => {
       type: 'tv'
     }));
 
-    return {
+    const formattedData = {
       movies,
       tvShows,
       trending: [] // Backend doesn't provide trending yet
     };
+    
+    // Cache for 2 weeks
+    localStorage.setItem(cacheKey, JSON.stringify({
+      data: formattedData,
+      timestamp: Date.now()
+    }));
+    
+    return formattedData;
   } catch (error) {
     console.error('Error fetching featured content:', error);
-    // Return fallback data
+    
+    // Try to use cached data if API fails
+    const cached = localStorage.getItem('featured_content');
+    if (cached) {
+      const { data } = JSON.parse(cached);
+      return data;
+    }
+    
+    // Return fallback data as last resort
     return getFallbackData();
   }
 };
