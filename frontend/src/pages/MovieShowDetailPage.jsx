@@ -374,9 +374,13 @@ function MovieShowDetailPage() {
                   <Button
                     onClick={handleAddToWatchlist}
                     variant={isInWatchlist(id) ? 'primary' : 'outline'}
-                    className="w-full"
+                    className={`w-full ${
+                      isInWatchlist(id)
+                        ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white border-0'
+                        : ''
+                    }`}
                   >
-                    {isInWatchlist(id) ? '✓ In Watchlist' : '+ Add to Watchlist'}
+                    {isInWatchlist(id) ? '✓ Added to Watchlist' : '+ Add to Watchlist'}
                   </Button>
                   
                   <Button
