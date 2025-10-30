@@ -216,18 +216,19 @@ function DashboardPage() {
                       const watchedCount = Object.values(episodeProgress).filter(watched => watched).length;
                       const totalEpisodes = show.number_of_episodes || 100;
                       const progressPercent = Math.round((watchedCount / totalEpisodes) * 100);
+                      const backdrop = show.backdrop_path ?? show.backdropPath ?? show.poster_path ?? show.posterPath;
 
                       return (
                         <Link
-                          key={show.id}
-                          to={`/tv/${show.id}`}
+                          key={show.mediaId ?? show.id}
+                          to={`/tv/${show.mediaId ?? show.id}`}
                           className="group flex-shrink-0 w-72 snap-start"
                         >
                           <div className="relative rounded-3xl overflow-hidden mb-4 shadow-sm hover:shadow-xl hover:shadow-red-100/30 transition-all duration-300 group-hover:-translate-y-2">
                             <div className="aspect-video bg-gray-100">
-                              {show.backdrop_path ? (
+                              {backdrop ? (
                                 <img
-                                  src={getImageUrl(show.backdrop_path, 'w500')}
+                                  src={getImageUrl(backdrop, 'w500')}
                                   alt={show.name}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />

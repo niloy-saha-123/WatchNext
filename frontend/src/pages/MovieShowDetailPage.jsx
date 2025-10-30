@@ -517,7 +517,7 @@ function MovieShowDetailPage() {
                     
                     <div className="mt-4 pt-3 border-t border-slate-200">
                       <Button
-                        onClick={() => {
+                        onClick={async () => {
                           const watchedCount = getWatchedEpisodeCount();
                           const totalCount = getTotalEpisodeCount();
                           const isFullyWatched = watchedCount === totalCount;
@@ -526,7 +526,7 @@ function MovieShowDetailPage() {
                           
                           if (watchedCount > 0) {
                             // Add/update TV show in watched list
-                            addWatchedShow({
+                            await addWatchedShow({
                               ...mediaData,
                               episodeProgress,
                               watched: true
@@ -534,10 +534,10 @@ function MovieShowDetailPage() {
                             
                             // Auto-add to watchlist if not fully watched
                             if (!isFullyWatched && !isInWatchlist(id)) {
-                              addToWatchlist(mediaData);
+                              await addToWatchlist(mediaData);
                             }
                             // Persist episode progress to backend and refresh
-                            saveEpisodeProgress(id, episodeProgress);
+                            await saveEpisodeProgress(id, episodeProgress);
                           }
                         }}
                         variant="primary"
