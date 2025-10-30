@@ -9,13 +9,15 @@ import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
 import { useWatchData } from '../contexts/WatchDataContext';
 // import { useAuth } from '../contexts/AuthContext'; // TODO: Use for personalized greeting once user profile is implemented
-import { mediaAPI } from '../services/apiClient';
+import { mediaAPI, bundleAPI } from '../services/apiClient';
 
 function DashboardPage() {
   const { moviesWatched, showsWatched, getTotalHours, watchData } = useWatchData();
   // const { user } = useAuth(); // TODO: Use for personalized greeting once user profile is implemented
   const [trending, setTrending] = useState([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
+  const [bundles, setBundles] = useState([]);
+  const [bundlesError, setBundlesError] = useState('');
 
   // Fetch trending content with 1-week caching
   useEffect(() => {
@@ -61,6 +63,25 @@ function DashboardPage() {
       }
     };
     fetchTrending();
+  }, []);
+
+  // Fetch user's bundles for sidebar preview
+  useEffect(() => {
+    const fetchBundles = async () => {
+      try {
+        setBundlesError('');
+        const response = await bundleAPI.getBundles();
+        if (response?.success && Array.isArray(response.data)) {
+          setBundles(response.data);
+        } else {
+          setBundles([]);
+        }
+      } catch (error) {
+        console.error('Error fetching bundles:', error);
+        setBundlesError('');
+      }
+    };
+    fetchBundles();
   }, []);
 
   const getImageUrl = (path, size = 'w500') => {
@@ -326,23 +347,45 @@ function DashboardPage() {
 
             {/* Sidebar */}
             <aside className="lg:col-span-1 space-y-8">
-              
-              {/* Bundles (Playlists) - Placeholder */}
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl p-8 border border-red-100 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
+
+              {/* Bundles (Playlists) - Sidebar Preview */}
+              <div className="bg-gradient-to-br from-red-50 to-red-50 rounded-3xl p-8 border border-red-100 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Bundles</h3>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Bundles</h3>
+                  <Link to="/bundles" className="text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 px-3 py-1 rounded-full transition-colors">View All</Link>
                 </div>
-                <p className="text-sm text-gray-700 mb-6 leading-relaxed">
-                  Create playlists like "MCU Marathon" or "Oscar Winners"
-                </p>
-                <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-2xl transition-colors text-sm">
-                  Coming Soon
-                </button>
+                {bundlesError ? (
+                  <p className="text-sm text-gray-600">Unable to load bundles.</p>
+                ) : bundles.length === 0 ? (
+                  <div className="text-sm text-gray-700">
+                    <p className="mb-4 leading-relaxed">Create playlists like "MCU Marathon" or "Oscar Winners"</p>
+                    <Link to="/bundles" className="inline-flex w-full items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-2xl transition-colors text-sm">Create Your First Bundle</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {bundles.slice(0, 4).map((bundle) => (
+                      <Link key={bundle._id} to="/bundles" className="block group">
+                        <div className="flex items-center justify-between bg-white border border-red-100 rounded-2xl px-4 py-3 hover:border-red-300 hover:shadow-md transition-all">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-red-600">{bundle.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{bundle.items?.length || 0} items</p>
+                          </div>
+                          <span className="text-xs text-red-600 group-hover:text-red-700">Open →</span>
+                        </div>
+                      </Link>
+                    ))}
+                    {bundles.length > 4 && (
+                      <Link to="/bundles" className="block text-center text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 px-3 py-2 rounded-2xl transition-colors">View {bundles.length - 4} more</Link>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Recent Activity */}

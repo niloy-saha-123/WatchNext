@@ -6,7 +6,7 @@
  * Uses actual authentication state from AuthContext for security.
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '.';
 import ProfileDropdown from './ProfileDropdown';
 import SearchInput from './SearchInput';
@@ -14,12 +14,17 @@ import { useAuth } from '../../contexts/AuthContext';
 
 function Header() {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const isLanding = location.pathname === '/';
   
-  // Use clean white theme for authenticated users
-  const useCleanTheme = isAuthenticated;
+  // Force public header on landing page even if authenticated
+  const showAuthenticatedUI = isAuthenticated && !isLanding;
   
-  // Determine button theme based on authentication status
-  const buttonTheme = isAuthenticated ? 'orange' : 'red';
+  // Theme: clean white only when showing authenticated UI
+  const useCleanTheme = showAuthenticatedUI;
+  
+  // Public buttons should always use red; Bundles button also red
+  const buttonTheme = 'red';
   
   return (
     <header 
@@ -41,8 +46,8 @@ function Header() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Search Bar - Only on authenticated pages */}
-        {isAuthenticated && (
+        {/* Search Bar - Only on authenticated pages (not on landing) */}
+        {showAuthenticatedUI && (
           <div className="flex-1 max-w-2xl mx-auto">
             <SearchInput
               placeholder="Search..."
@@ -58,9 +63,14 @@ function Header() {
 
         {/* Action Buttons */}
         <nav className="flex items-center gap-4 flex-shrink-0" role="navigation" aria-label="Main navigation">
-          {isAuthenticated ? (
-            // Authenticated pages navigation - profile menu
-            <ProfileDropdown />
+          {showAuthenticatedUI ? (
+            // Authenticated pages navigation - Bundles + profile menu
+            <>
+              <Link to="/bundles" className="hidden sm:block">
+                <Button variant="secondary" theme={buttonTheme}>Bundles</Button>
+              </Link>
+              <ProfileDropdown />
+            </>
           ) : (
             // Public pages navigation - login/signup buttons
             <>

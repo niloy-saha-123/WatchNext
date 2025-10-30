@@ -20,6 +20,7 @@ import MovieShowDetailPage from './pages/MovieShowDetailPage';
 import MyMoviesPage from './pages/MyMoviesPage';
 import MyShowsPage from './pages/MyShowsPage';
 import WatchlistPage from './pages/WatchlistPage';
+import BundlesPage from './pages/BundlesPage';
 import './index.css';
 
 function App() {
@@ -95,6 +96,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <WatchlistPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/bundles" 
+              element={
+                <ProtectedRoute>
+                  <BundlesPage />
                 </ProtectedRoute>
               } 
             />

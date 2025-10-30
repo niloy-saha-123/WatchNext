@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header, LoadingSpinner, ErrorMessage, Button } from '../components/common';
-import { mediaAPI } from '../services/apiClient';
+import { mediaAPI, bundleAPI } from '../services/apiClient';
 import { useWatchData } from '../contexts/WatchDataContext';
 
 function MovieShowDetailPage() {
@@ -32,6 +32,8 @@ function MovieShowDetailPage() {
   const [showEpisodeTracker, setShowEpisodeTracker] = useState(false);
   const [episodeProgress, setEpisodeProgress] = useState({});
   const [visibleSeasons, setVisibleSeasons] = useState(5); // Show first 5 seasons by default
+  const [bundles, setBundles] = useState([]);
+  const [selectedBundleId, setSelectedBundleId] = useState('');
   
   // Get current watch data
   const currentWatchData = getWatchedContent(id, type);
@@ -90,6 +92,21 @@ function MovieShowDetailPage() {
       fetchMediaData();
     }
   }, [id, type]);
+
+  // Load bundles for add-to-bundle control
+  useEffect(() => {
+    const loadBundles = async () => {
+      try {
+        const resp = await bundleAPI.list();
+        setBundles(resp.data || []);
+        if ((resp.data || []).length > 0) setSelectedBundleId((resp.data || [])[0]._id);
+      } catch (e) {
+        // Non-fatal
+        console.warn('Failed to load bundles', e);
+      }
+    };
+    loadBundles();
+  }, []);
 
   const handleAddToWatchlist = () => {
     if (!mediaData) return;
@@ -387,6 +404,41 @@ function MovieShowDetailPage() {
                     {showEpisodeTracker ? 'Hide Episode Tracker' : 'Mark as Watched'}
                   </Button>
                 </div>
+
+              {/* Add to Bundle */}
+              {bundles.length > 0 && (
+                <div className="flex items-center gap-3 mb-6">
+                  <select
+                    value={selectedBundleId}
+                    onChange={(e) => setSelectedBundleId(e.target.value)}
+                    className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    {bundles.map(b => (
+                      <option key={b._id} value={b._id}>{b.name}</option>
+                    ))}
+                  </select>
+                  <Button
+                    onClick={async () => {
+                      if (!selectedBundleId || !mediaData) return;
+                      const item = {
+                        mediaId: Number(id),
+                        mediaType: type,
+                        title: mediaData.title,
+                        name: mediaData.name,
+                        posterPath: mediaData.poster_path,
+                        backdropPath: mediaData.backdrop_path,
+                        releaseDate: mediaData.release_date,
+                        firstAirDate: mediaData.first_air_date,
+                        voteAverage: mediaData.vote_average
+                      };
+                      await bundleAPI.addItem(selectedBundleId, item);
+                    }}
+                    variant="outline"
+                  >
+                    Add to Bundle
+                  </Button>
+                </div>
+              )}
 
                 {/* Rating - Only show if watched */}
                 {isWatched(id, type) && (

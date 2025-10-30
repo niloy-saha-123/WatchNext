@@ -307,10 +307,47 @@ export const watchAPI = {
   }
 };
 
+// Bundles API - folders of movies/shows
+export const bundleAPI = {
+  list: async () => {
+    return apiRequest('/bundles');
+  },
+  create: async ({ name, description = '' }) => {
+    return apiRequest('/bundles', {
+      method: 'POST',
+      body: JSON.stringify({ name, description })
+    });
+  },
+  update: async (id, updates) => {
+    return apiRequest(`/bundles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+  remove: async (id) => {
+    return apiRequest(`/bundles/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  addItem: async (id, item) => {
+    return apiRequest(`/bundles/${id}/items`, {
+      method: 'POST',
+      body: JSON.stringify(item)
+    });
+  },
+  removeItem: async (id, mediaId, mediaType) => {
+    const query = mediaType ? `?mediaType=${encodeURIComponent(mediaType)}` : '';
+    return apiRequest(`/bundles/${id}/items/${mediaId}${query}`, {
+      method: 'DELETE'
+    });
+  }
+};
+
 export default {
   mediaAPI,
   userStatsAPI,
   authAPI,
   profileAPI,
-  watchAPI
+  watchAPI,
+  bundleAPI
 };
