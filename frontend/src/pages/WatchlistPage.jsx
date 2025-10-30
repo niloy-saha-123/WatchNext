@@ -89,19 +89,26 @@ function WatchlistPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {watchlist.map(item => (
-                <div key={item.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+              {watchlist.map(item => {
+                const id = item.mediaId ?? item.id;
+                const type = item.mediaType ?? item.media_type;
+                const poster = item.posterPath ?? item.poster_path;
+                const title = item.title || item.name;
+                const vote = item.voteAverage ?? item.vote_average ?? 0;
+
+                return (
+                <div key={id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                   {/* Content Poster */}
                   <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                    {item.poster_path ? (
+                    {poster ? (
                       <img
-                        src={getImageUrl(item.poster_path)}
-                        alt={item.title || item.name}
+                        src={getImageUrl(poster)}
+                        alt={title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-500">
-                        {item.media_type === 'movie' ? (
+                        {type === 'movie' ? (
                           <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
@@ -116,10 +123,10 @@ function WatchlistPage() {
                     {/* Media Type Badge */}
                     <div className="absolute top-2 right-2">
                       <span className={`flex items-center gap-1 px-2 py-1 text-white text-xs font-medium rounded-full ${
-                        item.media_type === 'movie' ? 'bg-blue-500' : 'bg-green-500'
+                        type === 'movie' ? 'bg-blue-500' : 'bg-green-500'
                       }`}>
-                        {getMediaTypeIcon(item.media_type)}
-                        {item.media_type === 'movie' ? 'Movie' : 'TV Show'}
+                        {getMediaTypeIcon(type)}
+                        {type === 'movie' ? 'Movie' : 'TV Show'}
                       </span>
                     </div>
                   </div>
@@ -127,21 +134,21 @@ function WatchlistPage() {
                   {/* Content Info */}
                   <div className="p-4">
                     <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
-                      {item.title || item.name}
+                      {title}
                     </h3>
                     
                     <div className="space-y-2 text-sm text-slate-600">
                       <div className="flex items-center justify-between">
                         <span>Release Date:</span>
-                        <span>{formatDate(item.release_date || item.first_air_date)}</span>
+                        <span>{formatDate(item.release_date || item.first_air_date || item.releaseDate)}</span>
                       </div>
                       
                       <div className="flex items-center justify-between">
                         <span>Rating:</span>
-                        <span>⭐ {item.vote_average?.toFixed(1) || 'N/A'}</span>
+                        <span>⭐ {vote ? Number(vote).toFixed(1) : 'N/A'}</span>
                       </div>
                       
-                      {item.media_type === 'tv' && (
+                      {type === 'tv' && (
                         <div className="flex items-center justify-between">
                           <span>Seasons:</span>
                           <span>{item.number_of_seasons || 'N/A'}</span>
@@ -161,7 +168,7 @@ function WatchlistPage() {
                     {/* Actions */}
                     <div className="mt-4 flex gap-2">
                       <Link
-                        to={`/${item.media_type}/${item.id}`}
+                        to={`/${type}/${id}`}
                         className="flex-1 px-3 py-2 text-center text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                       >
                         View Details
@@ -169,7 +176,7 @@ function WatchlistPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
