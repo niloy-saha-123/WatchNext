@@ -348,42 +348,45 @@ function DashboardPage() {
             {/* Sidebar */}
             <aside className="lg:col-span-1 space-y-8">
 
-              {/* Bundles (Playlists) - Sidebar Preview */}
-              <div className="bg-gradient-to-br from-red-50 to-red-50 rounded-3xl p-8 border border-red-100 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">Bundles</h3>
-                  </div>
-                  <Link to="/bundles" className="text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 px-3 py-1 rounded-full transition-colors">View All</Link>
+              {/* Bundles - Folder Style Preview */}
+              <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Bundles</h3>
+                  <Link to="/bundles" className="text-sm font-medium text-red-600 hover:text-red-700">
+                    View All →
+                  </Link>
                 </div>
                 {bundlesError ? (
-                  <p className="text-sm text-gray-600">Unable to load bundles.</p>
+                  <p className="text-sm text-gray-600 py-8">Unable to load bundles.</p>
                 ) : bundles.length === 0 ? (
-                  <div className="text-sm text-gray-700">
-                    <p className="mb-4 leading-relaxed">Create playlists like "MCU Marathon" or "Oscar Winners"</p>
-                    <Link to="/bundles" className="inline-flex w-full items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-2xl transition-colors text-sm">Create Your First Bundle</Link>
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4">No bundles yet</p>
+                    <Link to="/bundles" className="inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl transition-colors text-sm">
+                      + Create Bundle
+                    </Link>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {bundles.slice(0, 4).map((bundle) => (
+                  <div className="space-y-3">
+                    {bundles.slice(0, 5).map((bundle) => (
                       <Link key={bundle._id} to="/bundles" className="block group">
-                        <div className="flex items-center justify-between bg-white border border-red-100 rounded-2xl px-4 py-3 hover:border-red-300 hover:shadow-md transition-all">
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-red-600">{bundle.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{bundle.items?.length || 0} items</p>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-red-50 border border-transparent hover:border-red-200 transition-all">
+                          <div className="w-10 h-10 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
                           </div>
-                          <span className="text-xs text-red-600 group-hover:text-red-700">Open →</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-red-600 transition-colors">{bundle.name}</p>
+                            <p className="text-xs text-gray-500">{bundle.items?.length || 0} items</p>
+                          </div>
                         </div>
                       </Link>
                     ))}
-                    {bundles.length > 4 && (
-                      <Link to="/bundles" className="block text-center text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 px-3 py-2 rounded-2xl transition-colors">View {bundles.length - 4} more</Link>
-                    )}
                   </div>
                 )}
               </div>

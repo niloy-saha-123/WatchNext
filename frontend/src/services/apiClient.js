@@ -35,7 +35,7 @@ const apiRequest = async (endpoint, options = {}) => {
         
         if (refreshResponse.ok) {
           // Retry original request (new cookie automatically included)
-          response = await fetch(url, config);
+        response = await fetch(url, config);
         } else {
           // Refresh failed, redirect to login
           if (window.location.pathname !== '/login') {

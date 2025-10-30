@@ -64,13 +64,8 @@ function Header() {
         {/* Action Buttons */}
         <nav className="flex items-center gap-4 flex-shrink-0" role="navigation" aria-label="Main navigation">
           {showAuthenticatedUI ? (
-            // Authenticated pages navigation - Bundles + profile menu
-            <>
-              <Link to="/bundles" className="hidden sm:block">
-                <Button variant="secondary" theme={buttonTheme}>Bundles</Button>
-              </Link>
-              <ProfileDropdown />
-            </>
+            // Authenticated pages navigation - profile menu only
+            <ProfileDropdown />
           ) : (
             // Public pages navigation - login/signup buttons
             <>
