@@ -25,7 +25,19 @@ function AnimatedPosterGrid() {
         setLoading(true);
         const data = await getFeaturedContent();
         const formattedData = formatPosterGridData(data.movies, data.tvShows);
-        setContent(formattedData);
+        // Ensure enough items to create a seamless loop (avoid visible gaps)
+        const ensureMinItems = (items, min = 14) => {
+          if (!Array.isArray(items) || items.length === 0) return [];
+          const out = [...items];
+          while (out.length < min) {
+            out.push(...items);
+          }
+          return out.slice(0, Math.max(min, out.length));
+        };
+
+        const paddedTop = ensureMinItems(formattedData.topRow, 16);
+        const paddedBottom = ensureMinItems(formattedData.bottomRow, 16);
+        setContent({ topRow: paddedTop, bottomRow: paddedBottom });
       } catch (err) {
         console.error('Error loading movie data:', err);
         setError(err.message);
@@ -58,12 +70,12 @@ function AnimatedPosterGrid() {
     const posterUrl = item.posterPath ? getImageUrl(item.posterPath, 'w342') : null;
     
     return (
-      <div key={`${prefix}-${index}`} className="flex-shrink-0 w-[342px] h-[513px]">
+      <div key={`${prefix}-${item.id ?? index}`} className="flex-shrink-0 w-[342px] h-[513px]">
         {posterUrl ? (
           <img 
             src={posterUrl} 
             alt={item.title}
-            className="w-full h-full object-contain opacity-20"
+            className="w-full h-full object-cover opacity-20"
             loading="lazy"
           />
         ) : (
