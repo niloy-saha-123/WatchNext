@@ -108,17 +108,21 @@ function MyShowsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {shows.map(show => {
+                const id = show.mediaId ?? show.id;
+                const poster = show.posterPath ?? show.poster_path;
+                const name = show.name;
+                const firstAir = show.first_air_date ?? show.releaseDate;
                 const watchedEpisodes = getEpisodeProgress(show);
                 const completionStatus = getCompletionStatus(show);
                 
                 return (
-                  <div key={show.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                  <div key={id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                     {/* Show Poster */}
                     <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                      {show.poster_path ? (
+                      {poster ? (
                         <img
-                          src={getImageUrl(show.poster_path)}
-                          alt={show.name}
+                          src={getImageUrl(poster)}
+                          alt={name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -148,13 +152,13 @@ function MyShowsPage() {
                     {/* Show Info */}
                     <div className="p-4">
                       <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
-                        {show.name}
+                        {name}
                       </h3>
                       
                       <div className="space-y-2 text-sm text-slate-600">
                         <div className="flex items-center justify-between">
                           <span>First Air Date:</span>
-                          <span>{formatDate(show.first_air_date)}</span>
+                          <span>{formatDate(firstAir)}</span>
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -201,7 +205,7 @@ function MyShowsPage() {
                       {/* Actions */}
                       <div className="mt-4 flex gap-2">
                         <Link
-                          to={`/tv/${show.id}`}
+                          to={`/tv/${id}`}
                           className="flex-1 px-3 py-2 text-center text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
                         >
                           View Details

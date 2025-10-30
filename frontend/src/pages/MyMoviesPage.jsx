@@ -91,14 +91,21 @@ function MyMoviesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {movies.map(movie => (
-                <div key={movie.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+              {movies.map(movie => {
+                const id = movie.mediaId ?? movie.id;
+                const poster = movie.posterPath ?? movie.poster_path;
+                const title = movie.title;
+                const release = movie.release_date ?? movie.releaseDate;
+                const runtime = movie.runtime;
+
+                return (
+                <div key={id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                   {/* Movie Poster */}
                   <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                    {movie.poster_path ? (
+                    {poster ? (
                       <img
-                        src={getImageUrl(movie.poster_path)}
-                        alt={movie.title}
+                        src={getImageUrl(poster)}
+                        alt={title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -120,18 +127,18 @@ function MyMoviesPage() {
                   {/* Movie Info */}
                   <div className="p-4">
                     <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
-                      {movie.title}
+                      {title}
                     </h3>
                     
                     <div className="space-y-2 text-sm text-slate-600">
                       <div className="flex items-center justify-between">
                         <span>Release Date:</span>
-                        <span>{formatDate(movie.release_date)}</span>
+                        <span>{formatDate(release)}</span>
                       </div>
                       
                       <div className="flex items-center justify-between">
                         <span>Runtime:</span>
-                        <span>{movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : 'N/A'}</span>
+                        <span>{runtime ? `${Math.floor(runtime / 60)}h ${runtime % 60}m` : 'N/A'}</span>
                       </div>
                       
                       <div className="flex items-center justify-between">
@@ -152,7 +159,7 @@ function MyMoviesPage() {
                     {/* Actions */}
                     <div className="mt-4 flex gap-2">
                       <Link
-                        to={`/movie/${movie.id}`}
+                        to={`/movie/${id}`}
                         className="flex-1 px-3 py-2 text-center text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
                       >
                         View Details
@@ -160,7 +167,7 @@ function MyMoviesPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
