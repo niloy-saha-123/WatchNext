@@ -52,9 +52,16 @@ export const WatchDataProvider = ({ children }) => {
 
       // Transform backend data to match expected format
       const movies = historyRes.data?.filter(item => item.mediaType === 'movie') || [];
-      const shows = historyRes.data?.filter(item => item.mediaType === 'tv') || [];
+      const showsRaw = historyRes.data?.filter(item => item.mediaType === 'tv') || [];
       const watchlist = watchlistRes.data || [];
       const progress = progressRes.data || [];
+
+      // Merge episode progress into shows for global availability
+      const progressMap = new Map(progress.map(p => [String(p.showId), p.episodeProgress || {}]));
+      const shows = showsRaw.map(s => ({
+        ...s,
+        episodeProgress: progressMap.get(String(s.mediaId || s.id)) || {}
+      }));
 
       setWatchData({ movies, shows, watchlist });
       setEpisodeProgress(progress);
@@ -65,6 +72,17 @@ export const WatchDataProvider = ({ children }) => {
       setEpisodeProgress([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Save episode progress for a TV show and refresh state
+  const saveEpisodeProgress = async (showId, progress) => {
+    try {
+      await watchAPI.updateEpisodeProgress({ showId, episodeProgress: progress });
+      await loadWatchData();
+    } catch (error) {
+      console.error('Error saving episode progress:', error);
+      throw error;
     }
   };
 
@@ -244,6 +262,7 @@ export const WatchDataProvider = ({ children }) => {
     removeFromWatchlist,
     updateMovie,
     updateShow,
+    saveEpisodeProgress,
     isWatched,
     isInWatchlist,
     getWatchedContent,

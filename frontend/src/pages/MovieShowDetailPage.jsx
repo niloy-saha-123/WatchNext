@@ -27,7 +27,8 @@ function MovieShowDetailPage() {
     addToWatchlist, 
     removeFromWatchlist,
     updateMovie,
-    updateShow
+    updateShow,
+    saveEpisodeProgress
   } = useWatchData();
   const [showEpisodeTracker, setShowEpisodeTracker] = useState(false);
   const [episodeProgress, setEpisodeProgress] = useState({});
@@ -535,6 +536,8 @@ function MovieShowDetailPage() {
                             if (!isFullyWatched && !isInWatchlist(id)) {
                               addToWatchlist(mediaData);
                             }
+                            // Persist episode progress to backend and refresh
+                            saveEpisodeProgress(id, episodeProgress);
                           }
                         }}
                         variant="primary"
