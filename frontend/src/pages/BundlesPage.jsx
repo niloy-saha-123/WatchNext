@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import { Header, LoadingSpinner, ErrorMessage } from '../components/common';
 import { bundleAPI, mediaAPI } from '../services/apiClient';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function BundlesPage() {
   const { watchData } = useWatchData();
@@ -137,11 +138,6 @@ function BundlesPage() {
     } catch (e) {
       alert(e.message || 'Failed to add item');
     }
-  };
-
-  const getImageUrl = (path, size = 'w342') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   // Get all library content (watched + watchlist)

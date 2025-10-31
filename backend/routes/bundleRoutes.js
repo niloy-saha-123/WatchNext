@@ -7,10 +7,13 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
+const { csrfProtect } = require('../middleware/csrf');
+const { body, validationResult, param, query } = require('express-validator');
 const Bundle = require('../models/Bundle');
 
-// Require auth for all bundle routes
+// Require auth and CSRF for write routes
 router.use(authenticateToken);
+router.use(csrfProtect);
 
 // GET /api/bundles - list bundles for current user
 router.get('/', async (req, res) => {
@@ -24,8 +27,15 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/bundles - create bundle { name, description }
-router.post('/', async (req, res) => {
+router.post('/', [
+  body('name').isString().trim().isLength({ min: 1, max: 200 }),
+  body('description').optional().isString(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const { name, description } = req.body || {};
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, message: 'Bundle name is required' });
@@ -42,8 +52,16 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/bundles/:id - update bundle name/description
-router.put('/:id', async (req, res) => {
+router.put('/:id', [
+  param('id').isMongoId(),
+  body('name').optional().isString().trim(),
+  body('description').optional().isString(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const { name, description } = req.body || {};
     const update = {};
     if (typeof name === 'string') update.name = name.trim();
@@ -67,7 +85,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/bundles/:id - delete bundle
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [param('id').isMongoId()], async (req, res) => {
   try {
     const result = await Bundle.deleteOne({ _id: req.params.id, userId: req.user._id });
     if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'Bundle not found' });
@@ -79,8 +97,23 @@ router.delete('/:id', async (req, res) => {
 });
 
 // POST /api/bundles/:id/items - add item { mediaId, mediaType, ... }
-router.post('/:id/items', async (req, res) => {
+router.post('/:id/items', [
+  param('id').isMongoId(),
+  body('mediaId').isInt().toInt(),
+  body('mediaType').isIn(['movie', 'tv']),
+  body('title').optional().isString(),
+  body('name').optional().isString(),
+  body('posterPath').optional().isString(),
+  body('backdropPath').optional().isString(),
+  body('releaseDate').optional().isString(),
+  body('firstAirDate').optional().isString(),
+  body('voteAverage').optional().isFloat({ min: 0 }).toFloat(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const { mediaId, mediaType, title, name, posterPath, backdropPath, releaseDate, firstAirDate, voteAverage } = req.body || {};
     if (!mediaId || !mediaType) {
       return res.status(400).json({ success: false, message: 'mediaId and mediaType are required' });
@@ -103,7 +136,11 @@ router.post('/:id/items', async (req, res) => {
 });
 
 // DELETE /api/bundles/:id/items/:mediaId - remove item
-router.delete('/:id/items/:mediaId', async (req, res) => {
+router.delete('/:id/items/:mediaId', [
+  param('id').isMongoId(),
+  param('mediaId').isInt().toInt(),
+  query('mediaType').optional().isIn(['movie', 'tv']),
+], async (req, res) => {
   try {
     const { mediaType } = req.query; // optional filter when same id exists across types
     const bundle = await Bundle.findOne({ _id: req.params.id, userId: req.user._id });

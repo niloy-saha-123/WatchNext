@@ -9,6 +9,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header, LoadingSpinner, ErrorMessage, Button } from '../components/common';
 import { mediaAPI, bundleAPI } from '../services/apiClient';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function MovieShowDetailPage() {
   const { id, type } = useParams();
@@ -250,11 +251,6 @@ function MovieShowDetailPage() {
     } else if (type === 'tv') {
       updateShow(id, { notes });
     }
-  };
-
-  const getImageUrl = (path, size = 'original') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   const formatRuntime = (minutes) => {

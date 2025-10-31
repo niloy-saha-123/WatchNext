@@ -9,6 +9,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { mediaAPI } from '../services/apiClient';
 import { LoadingSpinner, ErrorMessage, SearchInput } from '../components/common';
 import Header from '../components/common/Header';
+import { getImageUrl } from '../utils/imageUtils';
 
 function SearchResultsPage() {
   const [searchParams] = useSearchParams();
@@ -81,12 +82,6 @@ function SearchResultsPage() {
       fetchResults(query, 1, false);
     }
   }, [query]);
-
-  // Get image URL helper
-  const getImageUrl = (posterPath, size = 'w500') => {
-    if (!posterPath) return '/api/placeholder/300/450';
-    return `https://image.tmdb.org/t/p/${size}${posterPath}`;
-  };
 
   // Format release date
   const getReleaseYear = (date) => {

@@ -7,6 +7,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function WatchlistPage() {
   const { watchData } = useWatchData();
@@ -23,11 +24,6 @@ function WatchlistPage() {
     } catch {
       return 'Unknown';
     }
-  };
-
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   const getMediaTypeIcon = (mediaType) => {

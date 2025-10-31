@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 // import { useAuth } from '../contexts/AuthContext'; // TODO: Use for personalized greeting once user profile is implemented
 import { mediaAPI, bundleAPI } from '../services/apiClient';
 
@@ -70,7 +71,7 @@ function DashboardPage() {
     const fetchBundles = async () => {
       try {
         setBundlesError('');
-        const response = await bundleAPI.getBundles();
+        const response = await bundleAPI.list();
         if (response?.success && Array.isArray(response.data)) {
           setBundles(response.data);
         } else {
@@ -83,11 +84,6 @@ function DashboardPage() {
     };
     fetchBundles();
   }, []);
-
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
-  };
 
   const getInProgressShows = () => {
     return watchData.shows.filter(show => {
@@ -238,18 +234,23 @@ function DashboardPage() {
                       const totalEpisodes = show.number_of_episodes || 100;
                       const progressPercent = Math.round((watchedCount / totalEpisodes) * 100);
 
+                      const showId = show.mediaId || show.id;
+                      // Prefer backdrop; fall back to poster (normalized or TMDB fields)
+                      const backdropPath = show.backdrop_path || show.backdropPath || show.poster_path || show.posterPath || null;
+                      const showName = show.title || show.name;
+                      
                       return (
                         <Link
-                          key={show.id}
-                          to={`/tv/${show.id}`}
+                          key={showId}
+                          to={`/tv/${showId}`}
                           className="group flex-shrink-0 w-72 snap-start"
                         >
                           <div className="relative rounded-3xl overflow-hidden mb-4 shadow-sm hover:shadow-xl hover:shadow-red-100/30 transition-all duration-300 group-hover:-translate-y-2">
                             <div className="aspect-video bg-gray-100">
-                              {show.backdrop_path ? (
+                              {backdropPath ? (
                                 <img
-                                  src={getImageUrl(show.backdrop_path, 'w500')}
-                                  alt={show.name}
+                                  src={getImageUrl(backdropPath, 'w500')}
+                                  alt={showName}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               ) : (
@@ -269,7 +270,7 @@ function DashboardPage() {
                       </div>
                       </div>
                           <h3 className="font-semibold text-sm text-gray-900 line-clamp-1 group-hover:text-red-600 transition-colors mb-1">
-                            {show.name}
+                            {showName}
                           </h3>
                           <p className="text-xs text-gray-500">{progressPercent}% complete · {watchedCount} episodes</p>
                         </Link>
@@ -301,21 +302,28 @@ function DashboardPage() {
                 ) : (
                   <div className="relative">
                     <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-                      {watchData.watchlist.slice(0, 10).map(item => (
-                        <Link
-                          key={item.id}
-                          to={`/${item.media_type}/${item.id}`}
-                          className="group flex-shrink-0 w-44 snap-start"
-                        >
-                          <div className="relative rounded-3xl overflow-hidden mb-4 shadow-sm hover:shadow-xl hover:shadow-red-100/30 transition-all duration-300 group-hover:-translate-y-2">
-                            <div className="aspect-[2/3] bg-gray-100">
-                              {item.poster_path ? (
-                                <img
-                                  src={getImageUrl(item.poster_path, 'w342')}
-                                  alt={item.title || item.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                              ) : (
+                      {watchData.watchlist.slice(0, 10).map(item => {
+                        const itemId = item.mediaId || item.id;
+                        const mediaType = item.mediaType || item.media_type;
+                        const posterPath = item.posterPath || item.poster_path;
+                        const title = item.title || item.name;
+                        const voteAverage = item.voteAverage || item.vote_average;
+                        
+                        return (
+                          <Link
+                            key={itemId}
+                            to={`/${mediaType}/${itemId}`}
+                            className="group flex-shrink-0 w-44 snap-start"
+                          >
+                            <div className="relative rounded-3xl overflow-hidden mb-4 shadow-sm hover:shadow-xl hover:shadow-red-100/30 transition-all duration-300 group-hover:-translate-y-2">
+                              <div className="aspect-[2/3] bg-gray-100">
+                                {posterPath ? (
+                                  <img
+                                    src={getImageUrl(posterPath, 'w342')}
+                                    alt={title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  />
+                                ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">
                                   <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -323,21 +331,22 @@ function DashboardPage() {
                                 </div>
                               )}
                             </div>
-                            {item.vote_average > 0 && (
+                            {voteAverage > 0 && (
                               <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-lg">
                                 <div className="flex items-center space-x-1">
                                   <span className="text-red-500 text-sm font-bold">★</span>
-                                  <span className="text-gray-900 text-sm font-semibold">{item.vote_average.toFixed(1)}</span>
+                                  <span className="text-gray-900 text-sm font-semibold">{voteAverage.toFixed(1)}</span>
                                 </div>
                               </div>
                             )}
                           </div>
                           <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors mb-1">
-                            {item.title || item.name}
+                            {title}
                           </h3>
-                          <p className="text-xs text-gray-500 capitalize">{item.media_type}</p>
+                          <p className="text-xs text-gray-500 capitalize">{mediaType}</p>
                         </Link>
-                      ))}
+                      );
+                      })}
                     </div>
                   </div>
                 )}

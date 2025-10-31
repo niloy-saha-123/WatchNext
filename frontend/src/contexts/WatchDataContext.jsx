@@ -50,11 +50,38 @@ export const WatchDataProvider = ({ children }) => {
         watchAPI.getEpisodeProgress()
       ]);
 
+
       // Transform backend data to match expected format
       const movies = historyRes.data?.filter(item => item.mediaType === 'movie') || [];
-      const shows = historyRes.data?.filter(item => item.mediaType === 'tv') || [];
+      const showsRaw = historyRes.data?.filter(item => item.mediaType === 'tv') || [];
       const watchlist = watchlistRes.data || [];
       const progress = progressRes.data || [];
+
+      // Merge episode progress into shows
+      const shows = showsRaw.map(show => {
+        const showProgress = progress.find(p => {
+          const progressId = p.showId || p.id;
+          const showId = show.mediaId || show.id;
+          return progressId === showId;
+        });
+        
+        if (showProgress && showProgress.episodeProgress) {
+          // Mongoose Map is already an object when serialized
+          let episodeProgressObj = showProgress.episodeProgress;
+          
+          // Convert Map to object if needed (shouldn't happen in practice)
+          if (showProgress.episodeProgress instanceof Map) {
+            episodeProgressObj = Object.fromEntries(showProgress.episodeProgress);
+          }
+          
+          return {
+            ...show,
+            episodeProgress: episodeProgressObj,
+            number_of_episodes: showProgress.totalEpisodes || show.number_of_episodes || null
+          };
+        }
+        return show;
+      });
 
       setWatchData({ movies, shows, watchlist });
       setEpisodeProgress(progress);
@@ -181,6 +208,17 @@ export const WatchDataProvider = ({ children }) => {
     }
   };
 
+  // Save episode progress
+  const saveEpisodeProgress = async (showId, progressData) => {
+    try {
+      await watchAPI.updateEpisodeProgress(progressData);
+      await loadWatchData();
+    } catch (error) {
+      console.error('Error saving episode progress:', error);
+      throw error;
+    }
+  };
+
   // Check if content is watched
   const isWatched = (contentId, type) => {
     if (type === 'movie') {
@@ -244,6 +282,7 @@ export const WatchDataProvider = ({ children }) => {
     removeFromWatchlist,
     updateMovie,
     updateShow,
+    saveEpisodeProgress,
     isWatched,
     isInWatchlist,
     getWatchedContent,

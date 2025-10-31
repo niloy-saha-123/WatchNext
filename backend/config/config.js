@@ -40,10 +40,9 @@ const config = {
   // CORS Configuration
   cors: {
     origin: function (origin, callback) {
-      // SECURITY: Reject requests without Origin header
-      // This blocks curl, Postman, and other non-browser tools
+      // Allow requests without Origin (CLI tools, servers)
       if (!origin) {
-        return callback(new Error('Origin header required'));
+        return callback(null, true);
       }
       
       // Define allowed origins
@@ -76,6 +75,8 @@ const config = {
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
+    allowedHeaders: ['Content-Type', 'x-csrf-token'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
   },
 
   // Rate Limiting

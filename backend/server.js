@@ -50,11 +50,14 @@ app.use(cookieParser());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  const payload = {
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    env: config.nodeEnv 
-  });
+  };
+  if (config.nodeEnv !== 'production') {
+    payload.env = config.nodeEnv;
+  }
+  res.json(payload);
 });
 
 // Connect to MongoDB

@@ -25,16 +25,16 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Check if token is blacklisted (user logged out)
-    if (isBlacklisted(token)) {
+    // Verify token
+    const decoded = jwt.verify(token, config.jwt.secret);
+
+    // Check if token is blacklisted (user logged out) by jti
+    if (await isBlacklisted(decoded.jti)) {
       return res.status(401).json({
         success: false,
         message: 'Token has been revoked'
       });
     }
-
-    // Verify token
-    const decoded = jwt.verify(token, config.jwt.secret);
     
     // Check if token has userId (not a refresh token)
     if (decoded.type === 'refresh') {
@@ -96,14 +96,14 @@ const optionalAuth = async (req, res, next) => {
       return next();
     }
 
+    // Try to verify token
+    const decoded = jwt.verify(token, config.jwt.secret);
+
     // Check if token is blacklisted
-    if (isBlacklisted(token)) {
+    if (await isBlacklisted(decoded.jti)) {
       req.user = null;
       return next();
     }
-
-    // Try to verify token
-    const decoded = jwt.verify(token, config.jwt.secret);
     
     if (decoded.type === 'refresh') {
       req.user = null;

@@ -7,6 +7,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header, LoadingSpinner, ErrorMessage } from '../components/common';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function MyMoviesPage() {
   const { watchData } = useWatchData();
@@ -23,11 +24,6 @@ function MyMoviesPage() {
     } catch {
       return 'Unknown';
     }
-  };
-
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   const renderStars = (rating) => {
@@ -91,17 +87,21 @@ function MyMoviesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {movies.map(movie => (
-                <div key={movie.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-                  {/* Movie Poster */}
-                  <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                    {movie.poster_path ? (
-                      <img
-                        src={getImageUrl(movie.poster_path)}
-                        alt={movie.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
+              {movies.map(movie => {
+                const movieId = movie.mediaId || movie.id;
+                const posterPath = movie.posterPath || movie.poster_path;
+                
+                return (
+                  <div key={movieId} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                    {/* Movie Poster */}
+                    <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
+                      {posterPath ? (
+                        <img
+                          src={getImageUrl(posterPath)}
+                          alt={movie.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-500">
                         <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -152,7 +152,7 @@ function MyMoviesPage() {
                     {/* Actions */}
                     <div className="mt-4 flex gap-2">
                       <Link
-                        to={`/movie/${movie.id}`}
+                        to={`/movie/${movieId}`}
                         className="flex-1 px-3 py-2 text-center text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
                       >
                         View Details
@@ -160,7 +160,8 @@ function MyMoviesPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

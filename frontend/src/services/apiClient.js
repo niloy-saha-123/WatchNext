@@ -8,6 +8,15 @@
 // API Configuration - Frontend only needs the backend API URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
+// Read a cookie value by name
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 // Generic API request function
 // HttpOnly cookies are automatically included with credentials: 'include'
 const apiRequest = async (endpoint, options = {}) => {
@@ -20,6 +29,15 @@ const apiRequest = async (endpoint, options = {}) => {
     credentials: 'include', // Include HttpOnly cookies automatically
     ...options
   };
+
+  // Attach CSRF token for state-changing requests
+  const method = (config.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
+    const csrf = getCookie('XSRF-TOKEN');
+    if (csrf) {
+      config.headers['x-csrf-token'] = csrf;
+    }
+  }
 
   try {
     let response = await fetch(url, config);
@@ -35,21 +53,12 @@ const apiRequest = async (endpoint, options = {}) => {
         
         if (refreshResponse.ok) {
           // Retry original request (new cookie automatically included)
-        response = await fetch(url, config);
+          response = await fetch(url, config);
         } else {
-          // Refresh failed, redirect to login
-          if (window.location.pathname !== '/login') {
-            window.history.pushState({}, '', '/login');
-            window.location.reload();
-          }
+          // Refresh failed, surface error for UI to handle
           throw new Error('Session expired. Please login again.');
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
-        if (window.location.pathname !== '/login') {
-          window.history.pushState({}, '', '/login');
-          window.location.reload();
-        }
         throw new Error('Session expired. Please login again.');
       }
     }

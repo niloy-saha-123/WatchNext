@@ -7,6 +7,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function MyShowsPage() {
   const { watchData } = useWatchData();
@@ -23,11 +24,6 @@ function MyShowsPage() {
     } catch {
       return 'Unknown';
     }
-  };
-
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   const renderStars = (rating) => {
@@ -110,15 +106,18 @@ function MyShowsPage() {
               {shows.map(show => {
                 const watchedEpisodes = getEpisodeProgress(show);
                 const completionStatus = getCompletionStatus(show);
+                const showId = show.mediaId || show.id;
+                const posterPath = show.posterPath || show.poster_path;
+                const showName = show.title || show.name;
                 
                 return (
-                  <div key={show.id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                  <div key={showId} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                     {/* Show Poster */}
                     <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                      {show.poster_path ? (
+                      {posterPath ? (
                         <img
-                          src={getImageUrl(show.poster_path)}
-                          alt={show.name}
+                          src={getImageUrl(posterPath)}
+                          alt={showName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -148,7 +147,7 @@ function MyShowsPage() {
                     {/* Show Info */}
                     <div className="p-4">
                       <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
-                        {show.name}
+                        {showName}
                       </h3>
                       
                       <div className="space-y-2 text-sm text-slate-600">
@@ -201,7 +200,7 @@ function MyShowsPage() {
                       {/* Actions */}
                       <div className="mt-4 flex gap-2">
                         <Link
-                          to={`/tv/${show.id}`}
+                          to={`/tv/${showId}`}
                           className="flex-1 px-3 py-2 text-center text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
                         >
                           View Details
