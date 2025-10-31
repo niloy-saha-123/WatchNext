@@ -98,6 +98,21 @@ export const WatchDataProvider = ({ children }) => {
   // Add movie to watched list
   const addWatchedMovie = async (movieData) => {
     try {
+      // Optimistic update
+      const optimistic = {
+        mediaId: movieData.id,
+        mediaType: 'movie',
+        title: movieData.title,
+        posterPath: movieData.poster_path,
+        releaseDate: movieData.release_date,
+        overview: movieData.overview,
+        voteAverage: movieData.vote_average,
+        runtime: movieData.runtime,
+        rating: movieData.rating || null,
+        notes: movieData.notes || ''
+      };
+      setWatchData(prev => ({ ...prev, movies: [optimistic, ...prev.movies] }));
+
       const formattedData = {
         mediaId: movieData.id,
         mediaType: 'movie',
@@ -117,6 +132,8 @@ export const WatchDataProvider = ({ children }) => {
       await loadWatchData();
     } catch (error) {
       console.error('Error adding movie to history:', error);
+      // rollback
+      setWatchData(prev => ({ ...prev, movies: prev.movies.filter(m => (m.mediaId || m.id) !== movieData.id) }));
       throw error;
     }
   };
@@ -124,6 +141,19 @@ export const WatchDataProvider = ({ children }) => {
   // Add TV show to watched list
   const addWatchedShow = async (showData) => {
     try {
+      const optimistic = {
+        mediaId: showData.id,
+        mediaType: 'tv',
+        title: showData.name,
+        posterPath: showData.poster_path,
+        releaseDate: showData.first_air_date,
+        overview: showData.overview,
+        voteAverage: showData.vote_average,
+        runtime: showData.episode_run_time?.[0] || 0,
+        isCompleted: false
+      };
+      setWatchData(prev => ({ ...prev, shows: [optimistic, ...prev.shows] }));
+
       const formattedData = {
         mediaId: showData.id,
         mediaType: 'tv',
@@ -140,6 +170,7 @@ export const WatchDataProvider = ({ children }) => {
       await loadWatchData();
     } catch (error) {
       console.error('Error adding show to history:', error);
+      setWatchData(prev => ({ ...prev, shows: prev.shows.filter(s => (s.mediaId || s.id) !== showData.id) }));
       throw error;
     }
   };
@@ -147,6 +178,17 @@ export const WatchDataProvider = ({ children }) => {
   // Add content to watchlist
   const addToWatchlist = async (contentData) => {
     try {
+      const optimistic = {
+        mediaId: contentData.id,
+        mediaType: contentData.media_type || contentData.type,
+        title: contentData.title || contentData.name,
+        posterPath: contentData.poster_path,
+        releaseDate: contentData.release_date || contentData.first_air_date,
+        overview: contentData.overview || '',
+        voteAverage: contentData.vote_average || 0
+      };
+      setWatchData(prev => ({ ...prev, watchlist: [optimistic, ...prev.watchlist] }));
+
       const formattedData = {
         mediaId: contentData.id,
         mediaType: contentData.media_type || contentData.type,
@@ -161,6 +203,7 @@ export const WatchDataProvider = ({ children }) => {
       await loadWatchData();
     } catch (error) {
       console.error('Error adding to watchlist:', error);
+      setWatchData(prev => ({ ...prev, watchlist: prev.watchlist.filter(i => (i.mediaId || i.id) !== contentData.id) }));
       throw error;
     }
   };
@@ -170,12 +213,19 @@ export const WatchDataProvider = ({ children }) => {
     try {
       // Find the item in current watchlist to get its _id
       const item = watchData.watchlist.find(i => i.mediaId === contentId || i.id === contentId);
+      // Optimistic remove
+      const prevList = watchData.watchlist;
+      setWatchData(prev => ({ ...prev, watchlist: prev.watchlist.filter(i => (i.mediaId || i.id) !== contentId) }));
       if (item && item._id) {
         await watchAPI.removeFromWatchlist(item._id);
         await loadWatchData();
+      } else {
+        // If no _id yet (optimistic item), rely on next load
       }
     } catch (error) {
       console.error('Error removing from watchlist:', error);
+      // rollback
+      setWatchData(prev => ({ ...prev, watchlist: prev.watchlist }));
       throw error;
     }
   };
