@@ -210,11 +210,11 @@ export const WatchDataProvider = ({ children }) => {
 
   // Remove content from watchlist
   const removeFromWatchlist = async (contentId) => {
+    const previousWatchlist = watchData.watchlist;
     try {
       // Find the item in current watchlist to get its _id
       const item = watchData.watchlist.find(i => i.mediaId === contentId || i.id === contentId);
       // Optimistic remove
-      const prevList = watchData.watchlist;
       setWatchData(prev => ({ ...prev, watchlist: prev.watchlist.filter(i => (i.mediaId || i.id) !== contentId) }));
       if (item && item._id) {
         await watchAPI.removeFromWatchlist(item._id);
@@ -225,7 +225,7 @@ export const WatchDataProvider = ({ children }) => {
     } catch (error) {
       console.error('Error removing from watchlist:', error);
       // rollback
-      setWatchData(prev => ({ ...prev, watchlist: prev.watchlist }));
+      setWatchData(prev => ({ ...prev, watchlist: previousWatchlist }));
       throw error;
     }
   };
