@@ -6,11 +6,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
+import { SkeletonGrid } from '../components/common/Skeleton';
 import { useWatchData } from '../contexts/WatchDataContext';
 import { getImageUrl } from '../utils/imageUtils';
 
 function MyShowsPage() {
-  const { watchData } = useWatchData();
+  const { watchData, isLoading } = useWatchData();
   const shows = watchData.shows || [];
 
   const formatDate = (dateString) => {
@@ -87,7 +88,9 @@ function MyShowsPage() {
       {/* Shows Grid */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          {shows.length === 0 ? (
+          {isLoading ? (
+            <SkeletonGrid count={12} />
+          ) : shows.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📺</div>
               <h2 className="text-2xl font-semibold text-slate-900 mb-2">No TV Shows Yet</h2>

@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { mediaAPI } from '../services/apiClient';
 import { LoadingSpinner, ErrorMessage, SearchInput } from '../components/common';
+import { SkeletonGrid } from '../components/common/Skeleton';
 import Header from '../components/common/Header';
 import { getImageUrl } from '../utils/imageUtils';
 
@@ -152,9 +153,7 @@ function SearchResultsPage() {
 
           {/* Loading State */}
           {loading && results.length === 0 && (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="large" />
-            </div>
+            <SkeletonGrid count={18} />
           )}
 
           {/* No Results */}

@@ -5,12 +5,13 @@
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Header, LoadingSpinner, ErrorMessage } from '../components/common';
+import { Header } from '../components/common';
+import { SkeletonGrid } from '../components/common/Skeleton';
 import { useWatchData } from '../contexts/WatchDataContext';
 import { getImageUrl } from '../utils/imageUtils';
 
 function MyMoviesPage() {
-  const { watchData } = useWatchData();
+  const { watchData, isLoading } = useWatchData();
   const movies = watchData.movies || [];
 
   const formatDate = (dateString) => {
@@ -71,7 +72,9 @@ function MyMoviesPage() {
       {/* Movies Grid */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          {movies.length === 0 ? (
+          {isLoading ? (
+            <SkeletonGrid count={12} />
+          ) : movies.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🎬</div>
               <h2 className="text-2xl font-semibold text-slate-900 mb-2">No Movies Yet</h2>

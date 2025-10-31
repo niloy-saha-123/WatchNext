@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
+import { SkeletonCard } from '../components/common/Skeleton';
 import { useWatchData } from '../contexts/WatchDataContext';
 import { getImageUrl } from '../utils/imageUtils';
 // import { useAuth } from '../contexts/AuthContext'; // TODO: Use for personalized greeting once user profile is implemented
@@ -169,8 +170,10 @@ function DashboardPage() {
                 </div>
 
                 {loadingTrending ? (
-                  <div className="flex items-center justify-center py-16">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-600 border-t-transparent"></div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    {Array.from({ length: 12 }).map((_, idx) => (
+                      <SkeletonCard key={idx} />
+                    ))}
                   </div>
                 ) : (
                   <div className="relative">
