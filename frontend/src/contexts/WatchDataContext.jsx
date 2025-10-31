@@ -261,7 +261,10 @@ export const WatchDataProvider = ({ children }) => {
   // Save episode progress
   const saveEpisodeProgress = async (showId, progressData) => {
     try {
-      await watchAPI.updateEpisodeProgress(progressData);
+      await watchAPI.updateEpisodeProgress({
+        showId: Number(showId),
+        ...progressData
+      });
       await loadWatchData();
     } catch (error) {
       console.error('Error saving episode progress:', error);

@@ -28,7 +28,8 @@ function MovieShowDetailPage() {
     addToWatchlist, 
     removeFromWatchlist,
     updateMovie,
-    updateShow
+    updateShow,
+    saveEpisodeProgress
   } = useWatchData();
   const [showEpisodeTracker, setShowEpisodeTracker] = useState(false);
   const [episodeProgress, setEpisodeProgress] = useState({});
@@ -560,7 +561,7 @@ function MovieShowDetailPage() {
                     
                     <div className="mt-4 pt-3 border-t border-slate-200">
                       <Button
-                        onClick={() => {
+                        onClick={async () => {
                           const watchedCount = getWatchedEpisodeCount();
                           const totalCount = getTotalEpisodeCount();
                           const isFullyWatched = watchedCount === totalCount;
@@ -574,6 +575,16 @@ function MovieShowDetailPage() {
                               episodeProgress,
                               watched: true
                             });
+                            try {
+                              await saveEpisodeProgress(id, {
+                                showName: mediaData.name || mediaData.title,
+                                episodeProgress,
+                                totalSeasons: mediaData.number_of_seasons || 1,
+                                totalEpisodes: totalCount
+                              });
+                            } catch (e) {
+                              // saving progress failed; continue
+                            }
                             
                             // Auto-add to watchlist if not fully watched
                             if (!isFullyWatched && !isInWatchlist(id)) {
