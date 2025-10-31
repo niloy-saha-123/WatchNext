@@ -15,14 +15,16 @@ import { useAuth } from '../../contexts/AuthContext';
 function Header() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
-  const isLandingPage = location.pathname === '/';
+  const isLanding = location.pathname === '/';
   
-  // On landing page, always use public theme regardless of auth
-  const showAuthenticatedUI = isAuthenticated && !isLandingPage;
+  // Force public header on landing page even if authenticated
+  const showAuthenticatedUI = isAuthenticated && !isLanding;
+  
+  // Theme: clean white only when showing authenticated UI
   const useCleanTheme = showAuthenticatedUI;
   
-  // Determine button theme based on authentication status
-  const buttonTheme = showAuthenticatedUI ? 'orange' : 'red';
+  // Public buttons should always use red; Bundles button also red
+  const buttonTheme = 'red';
   
   return (
     <header 
@@ -34,7 +36,7 @@ function Header() {
     >
       <div className="container mx-auto px-4 h-16 flex items-center gap-6">
         {/* Logo */}
-        <Link to={showAuthenticatedUI ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className={`text-3xl font-black transition-all duration-300 tracking-tight flex-shrink-0`}>
           <span className={useCleanTheme ? 'text-red-600' : 'bg-gradient-to-r from-orange-400 via-red-400 to-purple-400 bg-clip-text text-transparent'}>
             Watch
           </span>
@@ -44,7 +46,7 @@ function Header() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Search Bar - Only on authenticated pages */}
+        {/* Search Bar - Only on authenticated pages (not on landing) */}
         {showAuthenticatedUI && (
           <div className="flex-1 max-w-2xl mx-auto">
             <SearchInput
@@ -62,7 +64,7 @@ function Header() {
         {/* Action Buttons */}
         <nav className="flex items-center gap-4 flex-shrink-0" role="navigation" aria-label="Main navigation">
           {showAuthenticatedUI ? (
-            // Authenticated pages navigation - profile menu
+            // Authenticated pages navigation - profile menu only
             <ProfileDropdown />
           ) : (
             // Public pages navigation - login/signup buttons

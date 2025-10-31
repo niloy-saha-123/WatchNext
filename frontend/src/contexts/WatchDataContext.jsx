@@ -50,18 +50,38 @@ export const WatchDataProvider = ({ children }) => {
         watchAPI.getEpisodeProgress()
       ]);
 
+
       // Transform backend data to match expected format
       const movies = historyRes.data?.filter(item => item.mediaType === 'movie') || [];
       const showsRaw = historyRes.data?.filter(item => item.mediaType === 'tv') || [];
       const watchlist = watchlistRes.data || [];
       const progress = progressRes.data || [];
 
-      // Merge episode progress into shows for global availability
-      const progressMap = new Map(progress.map(p => [String(p.showId), p.episodeProgress || {}]));
-      const shows = showsRaw.map(s => ({
-        ...s,
-        episodeProgress: progressMap.get(String(s.mediaId || s.id)) || {}
-      }));
+      // Merge episode progress into shows
+      const shows = showsRaw.map(show => {
+        const showProgress = progress.find(p => {
+          const progressId = p.showId || p.id;
+          const showId = show.mediaId || show.id;
+          return progressId === showId;
+        });
+        
+        if (showProgress && showProgress.episodeProgress) {
+          // Mongoose Map is already an object when serialized
+          let episodeProgressObj = showProgress.episodeProgress;
+          
+          // Convert Map to object if needed (shouldn't happen in practice)
+          if (showProgress.episodeProgress instanceof Map) {
+            episodeProgressObj = Object.fromEntries(showProgress.episodeProgress);
+          }
+          
+          return {
+            ...show,
+            episodeProgress: episodeProgressObj,
+            number_of_episodes: showProgress.totalEpisodes || show.number_of_episodes || null
+          };
+        }
+        return show;
+      });
 
       setWatchData({ movies, shows, watchlist });
       setEpisodeProgress(progress);
@@ -75,20 +95,24 @@ export const WatchDataProvider = ({ children }) => {
     }
   };
 
-  // Save episode progress for a TV show and refresh state
-  const saveEpisodeProgress = async (showId, progress) => {
-    try {
-      await watchAPI.updateEpisodeProgress({ showId, episodeProgress: progress });
-      await loadWatchData();
-    } catch (error) {
-      console.error('Error saving episode progress:', error);
-      throw error;
-    }
-  };
-
   // Add movie to watched list
   const addWatchedMovie = async (movieData) => {
     try {
+      // Optimistic update
+      const optimistic = {
+        mediaId: movieData.id,
+        mediaType: 'movie',
+        title: movieData.title,
+        posterPath: movieData.poster_path,
+        releaseDate: movieData.release_date,
+        overview: movieData.overview,
+        voteAverage: movieData.vote_average,
+        runtime: movieData.runtime,
+        rating: movieData.rating || null,
+        notes: movieData.notes || ''
+      };
+      setWatchData(prev => ({ ...prev, movies: [optimistic, ...prev.movies] }));
+
       const formattedData = {
         mediaId: movieData.id,
         mediaType: 'movie',
@@ -108,6 +132,8 @@ export const WatchDataProvider = ({ children }) => {
       await loadWatchData();
     } catch (error) {
       console.error('Error adding movie to history:', error);
+      // rollback
+      setWatchData(prev => ({ ...prev, movies: prev.movies.filter(m => (m.mediaId || m.id) !== movieData.id) }));
       throw error;
     }
   };
@@ -115,6 +141,19 @@ export const WatchDataProvider = ({ children }) => {
   // Add TV show to watched list
   const addWatchedShow = async (showData) => {
     try {
+      const optimistic = {
+        mediaId: showData.id,
+        mediaType: 'tv',
+        title: showData.name,
+        posterPath: showData.poster_path,
+        releaseDate: showData.first_air_date,
+        overview: showData.overview,
+        voteAverage: showData.vote_average,
+        runtime: showData.episode_run_time?.[0] || 0,
+        isCompleted: false
+      };
+      setWatchData(prev => ({ ...prev, shows: [optimistic, ...prev.shows] }));
+
       const formattedData = {
         mediaId: showData.id,
         mediaType: 'tv',
@@ -131,6 +170,7 @@ export const WatchDataProvider = ({ children }) => {
       await loadWatchData();
     } catch (error) {
       console.error('Error adding show to history:', error);
+      setWatchData(prev => ({ ...prev, shows: prev.shows.filter(s => (s.mediaId || s.id) !== showData.id) }));
       throw error;
     }
   };
@@ -138,6 +178,17 @@ export const WatchDataProvider = ({ children }) => {
   // Add content to watchlist
   const addToWatchlist = async (contentData) => {
     try {
+      const optimistic = {
+        mediaId: contentData.id,
+        mediaType: contentData.media_type || contentData.type,
+        title: contentData.title || contentData.name,
+        posterPath: contentData.poster_path,
+        releaseDate: contentData.release_date || contentData.first_air_date,
+        overview: contentData.overview || '',
+        voteAverage: contentData.vote_average || 0
+      };
+      setWatchData(prev => ({ ...prev, watchlist: [optimistic, ...prev.watchlist] }));
+
       const formattedData = {
         mediaId: contentData.id,
         mediaType: contentData.media_type || contentData.type,
@@ -152,21 +203,29 @@ export const WatchDataProvider = ({ children }) => {
       await loadWatchData();
     } catch (error) {
       console.error('Error adding to watchlist:', error);
+      setWatchData(prev => ({ ...prev, watchlist: prev.watchlist.filter(i => (i.mediaId || i.id) !== contentData.id) }));
       throw error;
     }
   };
 
   // Remove content from watchlist
   const removeFromWatchlist = async (contentId) => {
+    const previousWatchlist = watchData.watchlist;
     try {
       // Find the item in current watchlist to get its _id
-      const item = watchData.watchlist.find(i => i.mediaId === contentId || i.id === contentId);
+      const item = watchData.watchlist.find(i => Number(i.mediaId || i.id) === Number(contentId));
+      // Optimistic remove
+      setWatchData(prev => ({ ...prev, watchlist: prev.watchlist.filter(i => (i.mediaId || i.id) !== contentId) }));
       if (item && item._id) {
         await watchAPI.removeFromWatchlist(item._id);
         await loadWatchData();
+      } else {
+        // If no _id yet (optimistic item), rely on next load
       }
     } catch (error) {
       console.error('Error removing from watchlist:', error);
+      // rollback
+      setWatchData(prev => ({ ...prev, watchlist: previousWatchlist }));
       throw error;
     }
   };
@@ -174,7 +233,7 @@ export const WatchDataProvider = ({ children }) => {
   // Update movie data (rating, notes)
   const updateMovie = async (movieId, updates) => {
     try {
-      const movie = watchData.movies.find(m => m.mediaId === movieId || m.id === movieId);
+      const movie = watchData.movies.find(m => Number(m.mediaId || m.id) === Number(movieId));
       if (movie && movie._id) {
         await watchAPI.updateHistory(movie._id, updates);
         await loadWatchData();
@@ -188,7 +247,7 @@ export const WatchDataProvider = ({ children }) => {
   // Update TV show data
   const updateShow = async (showId, updates) => {
     try {
-      const show = watchData.shows.find(s => s.mediaId === showId || s.id === showId);
+      const show = watchData.shows.find(s => Number(s.mediaId || s.id) === Number(showId));
       if (show && show._id) {
         await watchAPI.updateHistory(show._id, updates);
         await loadWatchData();
@@ -199,30 +258,44 @@ export const WatchDataProvider = ({ children }) => {
     }
   };
 
+  // Save episode progress
+  const saveEpisodeProgress = async (showId, progressData) => {
+    try {
+      await watchAPI.updateEpisodeProgress({
+        showId: Number(showId),
+        ...progressData
+      });
+      await loadWatchData();
+    } catch (error) {
+      console.error('Error saving episode progress:', error);
+      throw error;
+    }
+  };
+
   // Check if content is watched
   const isWatched = (contentId, type) => {
     if (type === 'movie') {
-      return watchData.movies.some(movie => (movie.mediaId || movie.id) === contentId);
+      return watchData.movies.some(movie => Number(movie.mediaId || movie.id) === Number(contentId));
     } else if (type === 'tv') {
-      return watchData.shows.some(show => (show.mediaId || show.id) === contentId);
+      return watchData.shows.some(show => Number(show.mediaId || show.id) === Number(contentId));
     }
     return false;
   };
 
   // Check if content is in watchlist
   const isInWatchlist = (contentId) => {
-    return watchData.watchlist.some(item => (item.mediaId || item.id) === contentId);
+    return watchData.watchlist.some(item => Number(item.mediaId || item.id) === Number(contentId));
   };
 
   // Get watched content data
   const getWatchedContent = (contentId, type) => {
     if (type === 'movie') {
-      return watchData.movies.find(movie => (movie.mediaId || movie.id) === contentId);
+      return watchData.movies.find(movie => Number(movie.mediaId || movie.id) === Number(contentId));
     } else if (type === 'tv') {
-      const show = watchData.shows.find(show => (show.mediaId || show.id) === contentId);
+      const show = watchData.shows.find(show => Number(show.mediaId || show.id) === Number(contentId));
       if (show) {
         // Attach episode progress if available
-        const progress = episodeProgress.find(p => p.showId === contentId);
+        const progress = episodeProgress.find(p => Number(p.showId) === Number(contentId));
         if (progress) {
           return {
             ...show,
@@ -237,7 +310,7 @@ export const WatchDataProvider = ({ children }) => {
 
   // Get watchlist content data
   const getWatchlistContent = (contentId) => {
-    return watchData.watchlist.find(item => (item.mediaId || item.id) === contentId);
+    return watchData.watchlist.find(item => Number(item.mediaId || item.id) === Number(contentId));
   };
 
   // Get total hours watched

@@ -8,7 +8,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { mediaAPI } from '../services/apiClient';
 import { LoadingSpinner, ErrorMessage, SearchInput } from '../components/common';
+import { SkeletonGrid } from '../components/common/Skeleton';
 import Header from '../components/common/Header';
+import { getImageUrl } from '../utils/imageUtils';
 
 function SearchResultsPage() {
   const [searchParams] = useSearchParams();
@@ -82,12 +84,6 @@ function SearchResultsPage() {
     }
   }, [query]);
 
-  // Get image URL helper
-  const getImageUrl = (posterPath, size = 'w500') => {
-    if (!posterPath) return '/api/placeholder/300/450';
-    return `https://image.tmdb.org/t/p/${size}${posterPath}`;
-  };
-
   // Format release date
   const getReleaseYear = (date) => {
     if (!date) return '';
@@ -157,9 +153,7 @@ function SearchResultsPage() {
 
           {/* Loading State */}
           {loading && results.length === 0 && (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="large" />
-            </div>
+            <SkeletonGrid count={18} />
           )}
 
           {/* No Results */}

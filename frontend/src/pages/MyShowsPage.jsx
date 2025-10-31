@@ -6,10 +6,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
+import { SkeletonGrid } from '../components/common/Skeleton';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function MyShowsPage() {
-  const { watchData } = useWatchData();
+  const { watchData, isLoading } = useWatchData();
   const shows = watchData.shows || [];
 
   const formatDate = (dateString) => {
@@ -23,11 +25,6 @@ function MyShowsPage() {
     } catch {
       return 'Unknown';
     }
-  };
-
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   const renderStars = (rating) => {
@@ -91,7 +88,9 @@ function MyShowsPage() {
       {/* Shows Grid */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          {shows.length === 0 ? (
+          {isLoading ? (
+            <SkeletonGrid count={12} />
+          ) : shows.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📺</div>
               <h2 className="text-2xl font-semibold text-slate-900 mb-2">No TV Shows Yet</h2>
@@ -108,21 +107,20 @@ function MyShowsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {shows.map(show => {
-                const id = show.mediaId ?? show.id;
-                const poster = show.posterPath ?? show.poster_path;
-                const name = show.name;
-                const firstAir = show.first_air_date ?? show.releaseDate;
                 const watchedEpisodes = getEpisodeProgress(show);
                 const completionStatus = getCompletionStatus(show);
+                const showId = show.mediaId || show.id;
+                const posterPath = show.posterPath || show.poster_path;
+                const showName = show.title || show.name;
                 
                 return (
-                  <div key={id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                  <div key={showId} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                     {/* Show Poster */}
                     <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                      {poster ? (
+                      {posterPath ? (
                         <img
-                          src={getImageUrl(poster)}
-                          alt={name}
+                          src={getImageUrl(posterPath)}
+                          alt={showName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -152,13 +150,13 @@ function MyShowsPage() {
                     {/* Show Info */}
                     <div className="p-4">
                       <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
-                        {name}
+                        {showName}
                       </h3>
                       
                       <div className="space-y-2 text-sm text-slate-600">
                         <div className="flex items-center justify-between">
                           <span>First Air Date:</span>
-                          <span>{formatDate(firstAir)}</span>
+                          <span>{formatDate(show.first_air_date)}</span>
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -205,7 +203,7 @@ function MyShowsPage() {
                       {/* Actions */}
                       <div className="mt-4 flex gap-2">
                         <Link
-                          to={`/tv/${id}`}
+                          to={`/tv/${showId}`}
                           className="flex-1 px-3 py-2 text-center text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
                         >
                           View Details

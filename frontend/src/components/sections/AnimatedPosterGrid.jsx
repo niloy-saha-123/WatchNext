@@ -7,11 +7,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { getFeaturedContent, formatPosterGridData } from '../../utils/movieData';
-// Simple image URL builder (backend handles TMDB integration)
-const getImageUrl = (path, size = 'w342') => {
-  if (!path) return null;
-  return `https://image.tmdb.org/t/p/${size}${path}`;
-};
+import { getImageUrl } from '../../utils/imageUtils';
 import { LoadingSpinner } from '../common';
 
 function AnimatedPosterGrid() {
@@ -73,10 +69,13 @@ function AnimatedPosterGrid() {
       <div key={`${prefix}-${item.id ?? index}`} className="flex-shrink-0 w-[342px] h-[513px]">
         {posterUrl ? (
           <img 
-            src={posterUrl} 
+            src={posterUrl}
+            srcSet={`${getImageUrl(item.posterPath, 'w185')} 185w, ${getImageUrl(item.posterPath, 'w342')} 342w, ${getImageUrl(item.posterPath, 'w500')} 500w`}
+            sizes="(max-width: 768px) 50vw, 342px"
             alt={item.title}
             className="w-full h-full object-cover opacity-20"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-slate-700/10">

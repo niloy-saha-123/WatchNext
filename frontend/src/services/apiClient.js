@@ -8,6 +8,15 @@
 // API Configuration - Frontend only needs the backend API URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
+// Read a cookie value by name
+const getCookie = (name) => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 // Generic API request function
 // HttpOnly cookies are automatically included with credentials: 'include'
 const apiRequest = async (endpoint, options = {}) => {
@@ -20,6 +29,15 @@ const apiRequest = async (endpoint, options = {}) => {
     credentials: 'include', // Include HttpOnly cookies automatically
     ...options
   };
+
+  // Attach CSRF token for state-changing requests
+  const method = (config.method || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD') {
+    const csrf = getCookie('XSRF-TOKEN');
+    if (csrf) {
+      config.headers['x-csrf-token'] = csrf;
+    }
+  }
 
   try {
     let response = await fetch(url, config);
@@ -37,18 +55,15 @@ const apiRequest = async (endpoint, options = {}) => {
           // Retry original request (new cookie automatically included)
           response = await fetch(url, config);
         } else {
-          // Refresh failed, redirect to login
-          if (window.location.pathname !== '/login') {
-            window.history.pushState({}, '', '/login');
-            window.location.reload();
+          // Refresh failed, surface error for UI to handle
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app:session-expired'));
           }
           throw new Error('Session expired. Please login again.');
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
-        if (window.location.pathname !== '/login') {
-          window.history.pushState({}, '', '/login');
-          window.location.reload();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('app:session-expired'));
         }
         throw new Error('Session expired. Please login again.');
       }
@@ -158,7 +173,7 @@ export const authAPI = {
   },
 
   // Login user
-  login: async (email, password) => {
+  login: async (email, password, remember = false) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -166,7 +181,7 @@ export const authAPI = {
           'Content-Type': 'application/json',
         },
         credentials: 'include', // Include cookies
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, remember })
       });
 
       const data = await response.json();
@@ -178,6 +193,9 @@ export const authAPI = {
       // Tokens are now in HttpOnly cookies - no need to store manually
       return data;
     } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('app:session-expired'));
+      }
       console.error('Login error:', error);
       throw error;
     }
@@ -307,10 +325,47 @@ export const watchAPI = {
   }
 };
 
+// Bundles API - folders of movies/shows
+export const bundleAPI = {
+  list: async () => {
+    return apiRequest('/bundles');
+  },
+  create: async ({ name, description = '' }) => {
+    return apiRequest('/bundles', {
+      method: 'POST',
+      body: JSON.stringify({ name, description })
+    });
+  },
+  update: async (id, updates) => {
+    return apiRequest(`/bundles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+  remove: async (id) => {
+    return apiRequest(`/bundles/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  addItem: async (id, item) => {
+    return apiRequest(`/bundles/${id}/items`, {
+      method: 'POST',
+      body: JSON.stringify(item)
+    });
+  },
+  removeItem: async (id, mediaId, mediaType) => {
+    const query = mediaType ? `?mediaType=${encodeURIComponent(mediaType)}` : '';
+    return apiRequest(`/bundles/${id}/items/${mediaId}${query}`, {
+      method: 'DELETE'
+    });
+  }
+};
+
 export default {
   mediaAPI,
   userStatsAPI,
   authAPI,
   profileAPI,
-  watchAPI
+  watchAPI,
+  bundleAPI
 };

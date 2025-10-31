@@ -66,10 +66,10 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, [checkAuthStatus]);
 
-  const login = async (email, password) => {
+  const login = async (email, password, remember = false) => {
     try {
       setIsLoading(true);
-      const response = await authAPI.login(email, password);
+      const response = await authAPI.login(email, password, remember);
       
       if (response.success && response.data.user) {
         setUser(response.data.user);

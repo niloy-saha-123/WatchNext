@@ -63,13 +63,13 @@ export const createTestAccount = async (api = authAPI) => {
  * Quick login helper for developers
  * Add to browser console for easy access
  */
-export const quickDevLogin = async (authAPI) => {
+export const quickDevLogin = async (customAPI) => {
   if (import.meta.env.MODE !== 'development') {
     console.warn('This feature only works in development');
     return;
   }
 
-  await createTestAccount(authAPI || undefined);
+  await createTestAccount(customAPI || undefined);
 };
 
 // Make it accessible from browser console in development

@@ -6,14 +6,17 @@
 
 const express = require('express');
 const { authenticateToken } = require('../middleware/auth');
+const { csrfProtect } = require('../middleware/csrf');
+const { body, validationResult, param } = require('express-validator');
 const WatchHistory = require('../models/WatchHistory');
 const WatchlistItem = require('../models/WatchlistItem');
 const EpisodeProgress = require('../models/EpisodeProgress');
 
 const router = express.Router();
 
-// All routes require authentication
+// All routes require authentication and CSRF for write actions
 router.use(authenticateToken);
+router.use(csrfProtect);
 
 // ========================================
 // WATCH HISTORY ROUTES (Movies & TV Shows)
@@ -31,17 +34,48 @@ router.get('/history', async (req, res) => {
 });
 
 // POST /api/watch/history - Add movie/show to watch history
-router.post('/history', async (req, res) => {
+router.post(
+  '/history',
+  [
+    body('mediaId').isInt().toInt(),
+    body('mediaType').isIn(['movie', 'tv']),
+    body('title').optional().isString().trim(),
+    body('posterPath').optional().isString(),
+    body('backdropPath').optional().isString(),
+    body('releaseDate').optional().isString(),
+    body('overview').optional().isString(),
+    body('voteAverage').optional().isFloat({ min: 0 }).toFloat(),
+    body('runtime').optional().isInt({ min: 0 }).toInt(),
+    body('rating').optional().isInt({ min: 1, max: 5 }).toInt(),
+    body('notes').optional().isString().trim(),
+    body('isCompleted').optional().isBoolean().toBoolean(),
+  ],
+  async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const historyData = {
       user: req.user._id,
-      ...req.body
+      mediaId: req.body.mediaId,
+      mediaType: req.body.mediaType,
+      title: req.body.title,
+      posterPath: req.body.posterPath,
+      backdropPath: req.body.backdropPath,
+      releaseDate: req.body.releaseDate,
+      overview: req.body.overview,
+      voteAverage: req.body.voteAverage,
+      runtime: req.body.runtime,
+      rating: req.body.rating ?? null,
+      notes: req.body.notes ?? '',
+      isCompleted: req.body.isCompleted ?? true,
     };
     
     const historyItem = await WatchHistory.findOneAndUpdate(
       { user: req.user._id, mediaId: req.body.mediaId, mediaType: req.body.mediaType },
       historyData,
-      { upsert: true, new: true }
+      { upsert: true, new: true, runValidators: true }
     );
     
     res.json({ success: true, data: historyItem });
@@ -52,12 +86,25 @@ router.post('/history', async (req, res) => {
 });
 
 // PUT /api/watch/history/:id - Update watch history item (rating, notes)
-router.put('/history/:id', async (req, res) => {
+router.put('/history/:id', [
+  param('id').isMongoId(),
+  body('rating').optional().isInt({ min: 1, max: 5 }).toInt(),
+  body('notes').optional().isString().trim(),
+  body('isCompleted').optional().isBoolean().toBoolean(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const historyItem = await WatchHistory.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      req.body,
-      { new: true }
+      {
+        ...(typeof req.body.rating !== 'undefined' ? { rating: req.body.rating } : {}),
+        ...(typeof req.body.notes !== 'undefined' ? { notes: req.body.notes } : {}),
+        ...(typeof req.body.isCompleted !== 'undefined' ? { isCompleted: req.body.isCompleted } : {}),
+      },
+      { new: true, runValidators: true }
     );
     
     if (!historyItem) {
@@ -72,7 +119,7 @@ router.put('/history/:id', async (req, res) => {
 });
 
 // DELETE /api/watch/history/:id - Remove from watch history
-router.delete('/history/:id', async (req, res) => {
+router.delete('/history/:id', [param('id').isMongoId()], async (req, res) => {
   try {
     const historyItem = await WatchHistory.findOneAndDelete({
       _id: req.params.id,
@@ -106,17 +153,35 @@ router.get('/watchlist', async (req, res) => {
 });
 
 // POST /api/watch/watchlist - Add item to watchlist
-router.post('/watchlist', async (req, res) => {
+router.post('/watchlist', [
+  body('mediaId').isInt().toInt(),
+  body('mediaType').isIn(['movie', 'tv']),
+  body('title').optional().isString().trim(),
+  body('posterPath').optional().isString(),
+  body('releaseDate').optional().isString(),
+  body('overview').optional().isString(),
+  body('voteAverage').optional().isFloat({ min: 0 }).toFloat(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const watchlistData = {
       user: req.user._id,
-      ...req.body
+      mediaId: req.body.mediaId,
+      mediaType: req.body.mediaType,
+      title: req.body.title,
+      posterPath: req.body.posterPath,
+      releaseDate: req.body.releaseDate,
+      overview: req.body.overview,
+      voteAverage: req.body.voteAverage,
     };
     
     const watchlistItem = await WatchlistItem.findOneAndUpdate(
       { user: req.user._id, mediaId: req.body.mediaId, mediaType: req.body.mediaType },
       watchlistData,
-      { upsert: true, new: true }
+      { upsert: true, new: true, runValidators: true }
     );
     
     res.json({ success: true, data: watchlistItem });
@@ -127,7 +192,7 @@ router.post('/watchlist', async (req, res) => {
 });
 
 // DELETE /api/watch/watchlist/:id - Remove from watchlist
-router.delete('/watchlist/:id', async (req, res) => {
+router.delete('/watchlist/:id', [param('id').isMongoId()], async (req, res) => {
   try {
     const watchlistItem = await WatchlistItem.findOneAndDelete({
       _id: req.params.id,
@@ -161,8 +226,18 @@ router.get('/progress', async (req, res) => {
 });
 
 // POST /api/watch/progress - Update episode progress
-router.post('/progress', async (req, res) => {
+router.post('/progress', [
+  body('showId').isInt().toInt(),
+  body('showName').optional().isString().trim(),
+  body('episodeProgress').optional().isObject(),
+  body('totalSeasons').optional().isInt({ min: 0 }).toInt(),
+  body('totalEpisodes').optional().isInt({ min: 0 }).toInt(),
+], async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
     const { showId, showName, episodeProgress, totalSeasons, totalEpisodes } = req.body;
     
     const progress = await EpisodeProgress.findOneAndUpdate(
@@ -175,7 +250,7 @@ router.post('/progress', async (req, res) => {
         totalSeasons,
         totalEpisodes
       },
-      { upsert: true, new: true }
+      { upsert: true, new: true, runValidators: true }
     );
     
     res.json({ success: true, data: progress });
@@ -186,7 +261,7 @@ router.post('/progress', async (req, res) => {
 });
 
 // DELETE /api/watch/progress/:id - Remove episode progress
-router.delete('/progress/:id', async (req, res) => {
+router.delete('/progress/:id', [param('id').isMongoId()], async (req, res) => {
   try {
     const progress = await EpisodeProgress.findOneAndDelete({
       _id: req.params.id,

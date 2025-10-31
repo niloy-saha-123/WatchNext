@@ -6,10 +6,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
+import { SkeletonGrid } from '../components/common/Skeleton';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 function WatchlistPage() {
-  const { watchData } = useWatchData();
+  const { watchData, isLoading } = useWatchData();
   const watchlist = watchData.watchlist || [];
 
   const formatDate = (dateString) => {
@@ -23,11 +25,6 @@ function WatchlistPage() {
     } catch {
       return 'Unknown';
     }
-  };
-
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
   };
 
   const getMediaTypeIcon = (mediaType) => {
@@ -73,7 +70,9 @@ function WatchlistPage() {
       {/* Watchlist Grid */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          {watchlist.length === 0 ? (
+          {isLoading ? (
+            <SkeletonGrid count={12} />
+          ) : watchlist.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📝</div>
               <h2 className="text-2xl font-semibold text-slate-900 mb-2">Watchlist is Empty</h2>
@@ -90,25 +89,25 @@ function WatchlistPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {watchlist.map(item => {
-                const id = item.mediaId ?? item.id;
-                const type = item.mediaType ?? item.media_type;
-                const poster = item.posterPath ?? item.poster_path;
+                const itemId = item.mediaId || item.id;
+                const mediaType = item.mediaType || item.media_type;
+                const posterPath = item.posterPath || item.poster_path;
                 const title = item.title || item.name;
-                const vote = item.voteAverage ?? item.vote_average ?? 0;
-
+                const releaseDate = item.releaseDate || item.release_date || item.first_air_date;
+                const voteAverage = (typeof item.voteAverage !== 'undefined' ? item.voteAverage : item.vote_average);
                 return (
-                <div key={id} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                <div key={itemId} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
                   {/* Content Poster */}
                   <div className="aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 relative">
-                    {poster ? (
+                    {posterPath ? (
                       <img
-                        src={getImageUrl(poster)}
+                        src={getImageUrl(posterPath)}
                         alt={title}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-500">
-                        {type === 'movie' ? (
+                        {mediaType === 'movie' ? (
                           <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
@@ -123,10 +122,10 @@ function WatchlistPage() {
                     {/* Media Type Badge */}
                     <div className="absolute top-2 right-2">
                       <span className={`flex items-center gap-1 px-2 py-1 text-white text-xs font-medium rounded-full ${
-                        type === 'movie' ? 'bg-blue-500' : 'bg-green-500'
+                        mediaType === 'movie' ? 'bg-blue-500' : 'bg-green-500'
                       }`}>
-                        {getMediaTypeIcon(type)}
-                        {type === 'movie' ? 'Movie' : 'TV Show'}
+                        {getMediaTypeIcon(mediaType)}
+                        {mediaType === 'movie' ? 'Movie' : 'TV Show'}
                       </span>
                     </div>
                   </div>
@@ -140,15 +139,15 @@ function WatchlistPage() {
                     <div className="space-y-2 text-sm text-slate-600">
                       <div className="flex items-center justify-between">
                         <span>Release Date:</span>
-                        <span>{formatDate(item.release_date || item.first_air_date || item.releaseDate)}</span>
+                        <span>{formatDate(releaseDate)}</span>
                       </div>
                       
                       <div className="flex items-center justify-between">
                         <span>Rating:</span>
-                        <span>⭐ {vote ? Number(vote).toFixed(1) : 'N/A'}</span>
+                        <span>⭐ {typeof voteAverage === 'number' ? voteAverage.toFixed(1) : 'N/A'}</span>
                       </div>
                       
-                      {type === 'tv' && (
+                      {mediaType === 'tv' && (
                         <div className="flex items-center justify-between">
                           <span>Seasons:</span>
                           <span>{item.number_of_seasons || 'N/A'}</span>
@@ -168,7 +167,7 @@ function WatchlistPage() {
                     {/* Actions */}
                     <div className="mt-4 flex gap-2">
                       <Link
-                        to={`/${type}/${id}`}
+                        to={`/${mediaType}/${itemId}`}
                         className="flex-1 px-3 py-2 text-center text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                       >
                         View Details
@@ -176,7 +175,7 @@ function WatchlistPage() {
                     </div>
                   </div>
                 </div>
-              )})}
+              );})}
             </div>
           )}
         </div>

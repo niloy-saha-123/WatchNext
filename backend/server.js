@@ -50,11 +50,14 @@ app.use(cookieParser());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  const payload = {
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    env: config.nodeEnv 
-  });
+  };
+  if (config.nodeEnv !== 'production') {
+    payload.env = config.nodeEnv;
+  }
+  res.json(payload);
 });
 
 // Connect to MongoDB
@@ -80,6 +83,7 @@ connectDB();
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/media', require('./routes/mediaRoutes'));
 app.use('/api/watch', require('./routes/watchRoutes'));
+app.use('/api/bundles', require('./routes/bundleRoutes'));
 
 // API documentation endpoint
 app.get('/api', (req, res) => {

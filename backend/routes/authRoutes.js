@@ -6,10 +6,12 @@
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { randomUUID } = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { config } = require('../config/config');
 const { addToBlacklist, isBlacklisted } = require('../utils/tokenBlacklist');
+const { setAuthCookies, setCsrfCookie } = require('../utils/cookies');
 
 const router = express.Router();
 
@@ -47,20 +49,20 @@ const validateLogin = [
     .withMessage('Password is required')
 ];
 
-// Generate JWT tokens
+// Generate JWT tokens with JTI
 const generateTokens = (userId) => {
   const accessToken = jwt.sign(
-    { userId },
+    { userId, jti: randomUUID() },
     config.jwt.secret,
     { expiresIn: config.jwt.accessExpiresIn || '15m' }
   );
-  
+
   const refreshToken = jwt.sign(
-    { userId, type: 'refresh' },
+    { userId, type: 'refresh', jti: randomUUID() },
     config.jwt.secret,
     { expiresIn: config.jwt.refreshExpiresIn || '7d' }
   );
-  
+
   return { accessToken, refreshToken };
 };
 
@@ -77,7 +79,7 @@ router.post('/register', validateRegistration, async (req, res) => {
       });
     }
 
-    const { name, email, password, birthday, phone } = req.body;
+    const { name, email, password, birthday, phone, remember } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -105,20 +107,10 @@ router.post('/register', validateRegistration, async (req, res) => {
     // Update last login
     await user.updateLastLogin();
 
-    // Set HttpOnly cookies for tokens
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production', // Only HTTPS in production
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+    // Set cookies
+    const refreshMaxAgeMs = remember ? 30 * 24 * 60 * 60 * 1000 : undefined; // 30 days if remembered
+    setAuthCookies(res, { accessToken, refreshToken }, { refreshMaxAgeMs });
+    setCsrfCookie(res);
 
     res.status(201).json({
       success: true,
@@ -157,7 +149,7 @@ router.post('/login', validateLogin, async (req, res) => {
       });
     }
 
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
 
     // Find user and include password for comparison
     const user = await User.findOne({ email }).select('+password');
@@ -191,20 +183,10 @@ router.post('/login', validateLogin, async (req, res) => {
     // Update last login
     await user.updateLastLogin();
 
-    // Set HttpOnly cookies for tokens
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+    // Set cookies
+    const refreshMaxAgeMs = remember ? 30 * 24 * 60 * 60 * 1000 : undefined; // 30 days if remembered
+    setAuthCookies(res, { accessToken, refreshToken }, { refreshMaxAgeMs });
+    setCsrfCookie(res);
 
     res.json({
       success: true,
@@ -244,16 +226,15 @@ router.post('/refresh', async (req, res) => {
       });
     }
 
-    // Check if refresh token is blacklisted (user logged out)
-    if (isBlacklisted(refreshToken)) {
+    // Verify refresh token
+    const decoded = jwt.verify(refreshToken, config.jwt.secret);
+    if (await isBlacklisted(decoded.jti)) {
       return res.status(401).json({
         success: false,
         message: 'Refresh token has been revoked'
       });
     }
-
-    // Verify refresh token
-    const decoded = jwt.verify(refreshToken, config.jwt.secret);
+    // Note: blacklist is checked by jti at logout time
     
     if (decoded.type !== 'refresh') {
       return res.status(401).json({
@@ -271,20 +252,16 @@ router.post('/refresh', async (req, res) => {
       });
     }
 
-    // Generate new access token
+    // Generate new access token (rotate jti)
     const accessToken = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, jti: randomUUID() },
       config.jwt.secret,
       { expiresIn: config.jwt.accessExpiresIn || '15m' }
     );
 
-    // Set new access token as HttpOnly cookie
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes
-    });
+    // Set new access token cookie
+    setAuthCookies(res, { accessToken, refreshToken });
+    setCsrfCookie(res);
 
     res.json({
       success: true,
@@ -348,30 +325,27 @@ router.get('/me', require('../middleware/auth').authenticateToken, (req, res) =>
 // POST /api/auth/logout - User logout (clears HttpOnly cookies and blacklists tokens)
 router.post('/logout', async (req, res) => {
   try {
-    // Get tokens from cookies before clearing
+    // Get tokens from cookies before clearing and blacklist their JTIs
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
-    
-    // Add tokens to blacklist to invalidate them immediately
-    if (accessToken) {
-      addToBlacklist(accessToken, 15 * 60 * 1000); // 15 minutes
-    }
-    if (refreshToken) {
-      addToBlacklist(refreshToken, 7 * 24 * 60 * 60 * 1000); // 7 days
-    }
+    try {
+      if (accessToken) {
+        const d = jwt.verify(accessToken, config.jwt.secret);
+        await addToBlacklist(d.jti, 15 * 60 * 1000);
+      }
+    } catch (_) { /* ignore */ }
+    try {
+      if (refreshToken) {
+        const d = jwt.verify(refreshToken, config.jwt.secret);
+        await addToBlacklist(d.jti, 7 * 24 * 60 * 60 * 1000);
+      }
+    } catch (_) { /* ignore */ }
     
     // Clear HttpOnly cookies from browser
-    res.clearCookie('accessToken', {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict'
-    });
-    
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: 'strict'
-    });
+    const base = { path: '/', secure: config.nodeEnv === 'production', sameSite: config.nodeEnv === 'production' ? 'none' : 'lax' };
+    res.clearCookie('accessToken', { ...base, httpOnly: true });
+    res.clearCookie('refreshToken', { ...base, httpOnly: true });
+    res.clearCookie('XSRF-TOKEN', { ...base, httpOnly: false });
 
     res.json({
       success: true,

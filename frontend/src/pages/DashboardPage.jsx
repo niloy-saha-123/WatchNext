@@ -7,15 +7,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../components/common';
+import { SkeletonCard } from '../components/common/Skeleton';
 import { useWatchData } from '../contexts/WatchDataContext';
+import { getImageUrl } from '../utils/imageUtils';
 // import { useAuth } from '../contexts/AuthContext'; // TODO: Use for personalized greeting once user profile is implemented
-import { mediaAPI } from '../services/apiClient';
+import { mediaAPI, bundleAPI } from '../services/apiClient';
 
 function DashboardPage() {
   const { moviesWatched, showsWatched, getTotalHours, watchData } = useWatchData();
   // const { user } = useAuth(); // TODO: Use for personalized greeting once user profile is implemented
   const [trending, setTrending] = useState([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
+  const [bundles, setBundles] = useState([]);
+  const [bundlesError, setBundlesError] = useState('');
 
   // Fetch trending content with 1-week caching
   useEffect(() => {
@@ -63,10 +67,24 @@ function DashboardPage() {
     fetchTrending();
   }, []);
 
-  const getImageUrl = (path, size = 'w500') => {
-    if (!path) return null;
-    return `https://image.tmdb.org/t/p/${size}${path}`;
-  };
+  // Fetch user's bundles for sidebar preview
+  useEffect(() => {
+    const fetchBundles = async () => {
+      try {
+        setBundlesError('');
+        const response = await bundleAPI.list();
+        if (response?.success && Array.isArray(response.data)) {
+          setBundles(response.data);
+        } else {
+          setBundles([]);
+        }
+      } catch (error) {
+        console.error('Error fetching bundles:', error);
+        setBundlesError('');
+      }
+    };
+    fetchBundles();
+  }, []);
 
   const getInProgressShows = () => {
     return watchData.shows.filter(show => {
@@ -152,8 +170,10 @@ function DashboardPage() {
                 </div>
 
                 {loadingTrending ? (
-                  <div className="flex items-center justify-center py-16">
-                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-600 border-t-transparent"></div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                    {Array.from({ length: 12 }).map((_, idx) => (
+                      <SkeletonCard key={idx} />
+                    ))}
                   </div>
                 ) : (
                   <div className="relative">
@@ -216,20 +236,24 @@ function DashboardPage() {
                       const watchedCount = Object.values(episodeProgress).filter(watched => watched).length;
                       const totalEpisodes = show.number_of_episodes || 100;
                       const progressPercent = Math.round((watchedCount / totalEpisodes) * 100);
-                      const backdrop = show.backdrop_path ?? show.backdropPath ?? show.poster_path ?? show.posterPath;
 
+                      const showId = show.mediaId || show.id;
+                      // Prefer backdrop; fall back to poster (normalized or TMDB fields)
+                      const backdropPath = show.backdrop_path || show.backdropPath || show.poster_path || show.posterPath || null;
+                      const showName = show.title || show.name;
+                      
                       return (
                         <Link
-                          key={show.mediaId ?? show.id}
-                          to={`/tv/${show.mediaId ?? show.id}`}
+                          key={showId}
+                          to={`/tv/${showId}`}
                           className="group flex-shrink-0 w-72 snap-start"
                         >
                           <div className="relative rounded-3xl overflow-hidden mb-4 shadow-sm hover:shadow-xl hover:shadow-red-100/30 transition-all duration-300 group-hover:-translate-y-2">
                             <div className="aspect-video bg-gray-100">
-                              {backdrop ? (
+                              {backdropPath ? (
                                 <img
-                                  src={getImageUrl(backdrop, 'w500')}
-                                  alt={show.name}
+                                  src={getImageUrl(backdropPath, 'w500')}
+                                  alt={showName}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                               ) : (
@@ -249,7 +273,7 @@ function DashboardPage() {
                       </div>
                       </div>
                           <h3 className="font-semibold text-sm text-gray-900 line-clamp-1 group-hover:text-red-600 transition-colors mb-1">
-                            {show.name}
+                            {showName}
                           </h3>
                           <p className="text-xs text-gray-500">{progressPercent}% complete · {watchedCount} episodes</p>
                         </Link>
@@ -282,49 +306,49 @@ function DashboardPage() {
                   <div className="relative">
                     <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
                       {watchData.watchlist.slice(0, 10).map(item => {
-                        const wlId = item.mediaId ?? item.id;
-                        const wlType = item.mediaType ?? item.media_type;
-                        const wlPoster = item.posterPath ?? item.poster_path;
-                        const wlTitle = item.title || item.name;
-                        const wlVote = item.voteAverage ?? item.vote_average ?? 0;
-
+                        const itemId = item.mediaId || item.id;
+                        const mediaType = item.mediaType || item.media_type;
+                        const posterPath = item.posterPath || item.poster_path;
+                        const title = item.title || item.name;
+                        const voteAverage = item.voteAverage || item.vote_average;
+                        
                         return (
                           <Link
-                            key={wlId}
-                            to={`/${wlType}/${wlId}`}
+                            key={itemId}
+                            to={`/${mediaType}/${itemId}`}
                             className="group flex-shrink-0 w-44 snap-start"
                           >
                             <div className="relative rounded-3xl overflow-hidden mb-4 shadow-sm hover:shadow-xl hover:shadow-red-100/30 transition-all duration-300 group-hover:-translate-y-2">
                               <div className="aspect-[2/3] bg-gray-100">
-                                {wlPoster ? (
+                                {posterPath ? (
                                   <img
-                                    src={getImageUrl(wlPoster, 'w342')}
-                                    alt={wlTitle}
+                                    src={getImageUrl(posterPath, 'w342')}
+                                    alt={title}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </div>
-                              {wlVote > 0 && (
-                                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-lg">
-                                  <div className="flex items-center space-x-1">
-                                    <span className="text-red-500 text-sm font-bold">★</span>
-                                    <span className="text-gray-900 text-sm font-semibold">{Number(wlVote).toFixed(1)}</span>
-                                  </div>
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                  </svg>
                                 </div>
                               )}
                             </div>
-                            <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors mb-1">
-                              {wlTitle}
-                            </h3>
-                            <p className="text-xs text-gray-500 capitalize">{wlType}</p>
-                          </Link>
-                        );
+                            {voteAverage > 0 && (
+                              <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-lg">
+                                <div className="flex items-center space-x-1">
+                                  <span className="text-red-500 text-sm font-bold">★</span>
+                                  <span className="text-gray-900 text-sm font-semibold">{voteAverage.toFixed(1)}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors mb-1">
+                            {title}
+                          </h3>
+                          <p className="text-xs text-gray-500 capitalize">{mediaType}</p>
+                        </Link>
+                      );
                       })}
                     </div>
                   </div>
@@ -335,23 +359,48 @@ function DashboardPage() {
 
             {/* Sidebar */}
             <aside className="lg:col-span-1 space-y-8">
-              
-              {/* Bundles (Playlists) - Placeholder */}
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-3xl p-8 border border-red-100 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-red-100 rounded-2xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
+
+              {/* Bundles - Folder Style Preview */}
+              <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-gray-900">Bundles</h3>
+                  <Link to="/bundles" className="text-sm font-medium text-red-600 hover:text-red-700">
+                    View All →
+                  </Link>
                 </div>
-                <p className="text-sm text-gray-700 mb-6 leading-relaxed">
-                  Create playlists like "MCU Marathon" or "Oscar Winners"
-                </p>
-                <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-2xl transition-colors text-sm">
-                  Coming Soon
-                </button>
+                {bundlesError ? (
+                  <p className="text-sm text-gray-600 py-8">Unable to load bundles.</p>
+                ) : bundles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4">No bundles yet</p>
+                    <Link to="/bundles" className="inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl transition-colors text-sm">
+                      + Create Bundle
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {bundles.slice(0, 5).map((bundle) => (
+                      <Link key={bundle._id} to="/bundles" className="block group">
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-red-50 border border-transparent hover:border-red-200 transition-all">
+                          <div className="w-10 h-10 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-red-600 transition-colors">{bundle.name}</p>
+                            <p className="text-xs text-gray-500">{bundle.items?.length || 0} items</p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Recent Activity */}
