@@ -75,7 +75,7 @@ const config = {
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
-    allowedHeaders: ['Content-Type', 'x-csrf-token'],
+    // Let the cors middleware reflect requested headers automatically for preflight
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
   },
 
