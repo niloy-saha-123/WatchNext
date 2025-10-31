@@ -37,6 +37,12 @@ function MovieShowDetailPage() {
   const [bundles, setBundles] = useState([]);
   const [selectedBundleId, setSelectedBundleId] = useState('');
   
+  // Helpers to read real per-season episode counts from TMDB details
+  const getEpisodeCountForSeason = (seasonNumber) => {
+    const season = mediaData?.seasons?.find(s => s.season_number === seasonNumber);
+    return season?.episode_count || 0;
+  };
+  
   // Get current watch data
   const currentWatchData = getWatchedContent(id, type);
   const currentRating = currentWatchData?.rating || null;
@@ -147,7 +153,7 @@ function MovieShowDetailPage() {
       
       // Mark all previous seasons as fully watched
       for (let prevSeason = 1; prevSeason < seasonNumber; prevSeason++) {
-        const prevSeasonEpisodeCount = prevSeason === 1 ? (mediaData?.number_of_episodes || 10) : 10;
+        const prevSeasonEpisodeCount = getEpisodeCountForSeason(prevSeason);
         for (let ep = 1; ep <= prevSeasonEpisodeCount; ep++) {
           const episodeKey = `s${prevSeason}e${ep}`;
           newProgress[episodeKey] = true;
@@ -166,7 +172,7 @@ function MovieShowDetailPage() {
       const newProgress = { ...episodeProgress };
       
       // Unselect all episodes in the same season after the clicked episode
-      const currentSeasonEpisodeCount = seasonNumber === 1 ? (mediaData?.number_of_episodes || 10) : 10;
+      const currentSeasonEpisodeCount = getEpisodeCountForSeason(seasonNumber);
       for (let ep = episodeNumber; ep <= currentSeasonEpisodeCount; ep++) {
         const episodeKey = `s${seasonNumber}e${ep}`;
         newProgress[episodeKey] = false;
@@ -175,7 +181,7 @@ function MovieShowDetailPage() {
       // Unselect all episodes in all seasons after the current season
       const totalSeasons = mediaData?.number_of_seasons || 1;
       for (let futureSeason = seasonNumber + 1; futureSeason <= totalSeasons; futureSeason++) {
-        const futureSeasonEpisodeCount = futureSeason === 1 ? (mediaData?.number_of_episodes || 10) : 10;
+        const futureSeasonEpisodeCount = getEpisodeCountForSeason(futureSeason);
         for (let ep = 1; ep <= futureSeasonEpisodeCount; ep++) {
           const episodeKey = `s${futureSeason}e${ep}`;
           newProgress[episodeKey] = false;
@@ -188,7 +194,7 @@ function MovieShowDetailPage() {
   };
 
   const handleSeasonToggle = (seasonNumber) => {
-    const episodeCount = seasonNumber === 1 ? (mediaData?.number_of_episodes || 10) : 10;
+    const episodeCount = getEpisodeCountForSeason(seasonNumber);
     
     // Check if entire season is watched
     const isSeasonWatched = Array.from({ length: episodeCount }, (_, i) => {
@@ -201,7 +207,7 @@ function MovieShowDetailPage() {
     if (!isSeasonWatched) {
       // If marking season as watched, also mark all previous seasons
       for (let prevSeason = 1; prevSeason <= seasonNumber; prevSeason++) {
-        const prevSeasonEpisodeCount = prevSeason === 1 ? (mediaData?.number_of_episodes || 10) : 10;
+        const prevSeasonEpisodeCount = getEpisodeCountForSeason(prevSeason);
         for (let ep = 1; ep <= prevSeasonEpisodeCount; ep++) {
           const episodeKey = `s${prevSeason}e${ep}`;
           newProgress[episodeKey] = true;
@@ -212,7 +218,7 @@ function MovieShowDetailPage() {
       const totalSeasons = mediaData?.number_of_seasons || 1;
       
       for (let unmarkSeason = seasonNumber; unmarkSeason <= totalSeasons; unmarkSeason++) {
-        const unmarkSeasonEpisodeCount = unmarkSeason === 1 ? (mediaData?.number_of_episodes || 10) : 10;
+        const unmarkSeasonEpisodeCount = getEpisodeCountForSeason(unmarkSeason);
         for (let ep = 1; ep <= unmarkSeasonEpisodeCount; ep++) {
           const episodeKey = `s${unmarkSeason}e${ep}`;
           newProgress[episodeKey] = false;
@@ -230,8 +236,7 @@ function MovieShowDetailPage() {
 
   const getTotalEpisodeCount = () => {
     if (!mediaData || mediaData.media_type !== 'tv') return 0;
-    // Simplified calculation - in real app, you'd get this from episode data
-    return (mediaData.number_of_seasons || 1) * 10; // 10 episodes per season for demo
+    return (mediaData.seasons || []).reduce((sum, s) => sum + (s.episode_count || 0), 0);
   };
 
   const handleLoadMoreSeasons = () => {
@@ -491,7 +496,7 @@ function MovieShowDetailPage() {
                       {/* Generate episodes for all seasons */}
                       {Array.from({ length: Math.min(mediaData.number_of_seasons || 1, visibleSeasons) }, (_, seasonIndex) => {
                         const seasonNumber = seasonIndex + 1;
-                        const episodeCount = seasonNumber === 1 ? (mediaData.number_of_episodes || 10) : 10; // Simplified for demo
+                        const episodeCount = getEpisodeCountForSeason(seasonNumber);
                         
                         return (
                           <div key={seasonNumber} className="border border-slate-200 rounded-lg p-3">
@@ -522,7 +527,7 @@ function MovieShowDetailPage() {
                               <h5 className="font-medium text-slate-900">Season {seasonNumber}</h5>
                             </div>
                             <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
-                              {Array.from({ length: Math.min(episodeCount, 20) }, (_, episodeIndex) => {
+                              {Array.from({ length: Math.min(episodeCount, 30) }, (_, episodeIndex) => {
                                 const episodeNumber = episodeIndex + 1;
                                 const isWatched = episodeProgress[`s${seasonNumber}e${episodeNumber}`];
                                 

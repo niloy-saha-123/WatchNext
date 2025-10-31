@@ -213,7 +213,7 @@ export const WatchDataProvider = ({ children }) => {
     const previousWatchlist = watchData.watchlist;
     try {
       // Find the item in current watchlist to get its _id
-      const item = watchData.watchlist.find(i => i.mediaId === contentId || i.id === contentId);
+      const item = watchData.watchlist.find(i => Number(i.mediaId || i.id) === Number(contentId));
       // Optimistic remove
       setWatchData(prev => ({ ...prev, watchlist: prev.watchlist.filter(i => (i.mediaId || i.id) !== contentId) }));
       if (item && item._id) {
@@ -233,7 +233,7 @@ export const WatchDataProvider = ({ children }) => {
   // Update movie data (rating, notes)
   const updateMovie = async (movieId, updates) => {
     try {
-      const movie = watchData.movies.find(m => m.mediaId === movieId || m.id === movieId);
+      const movie = watchData.movies.find(m => Number(m.mediaId || m.id) === Number(movieId));
       if (movie && movie._id) {
         await watchAPI.updateHistory(movie._id, updates);
         await loadWatchData();
@@ -247,7 +247,7 @@ export const WatchDataProvider = ({ children }) => {
   // Update TV show data
   const updateShow = async (showId, updates) => {
     try {
-      const show = watchData.shows.find(s => s.mediaId === showId || s.id === showId);
+      const show = watchData.shows.find(s => Number(s.mediaId || s.id) === Number(showId));
       if (show && show._id) {
         await watchAPI.updateHistory(show._id, updates);
         await loadWatchData();
@@ -275,27 +275,27 @@ export const WatchDataProvider = ({ children }) => {
   // Check if content is watched
   const isWatched = (contentId, type) => {
     if (type === 'movie') {
-      return watchData.movies.some(movie => (movie.mediaId || movie.id) === contentId);
+      return watchData.movies.some(movie => Number(movie.mediaId || movie.id) === Number(contentId));
     } else if (type === 'tv') {
-      return watchData.shows.some(show => (show.mediaId || show.id) === contentId);
+      return watchData.shows.some(show => Number(show.mediaId || show.id) === Number(contentId));
     }
     return false;
   };
 
   // Check if content is in watchlist
   const isInWatchlist = (contentId) => {
-    return watchData.watchlist.some(item => (item.mediaId || item.id) === contentId);
+    return watchData.watchlist.some(item => Number(item.mediaId || item.id) === Number(contentId));
   };
 
   // Get watched content data
   const getWatchedContent = (contentId, type) => {
     if (type === 'movie') {
-      return watchData.movies.find(movie => (movie.mediaId || movie.id) === contentId);
+      return watchData.movies.find(movie => Number(movie.mediaId || movie.id) === Number(contentId));
     } else if (type === 'tv') {
-      const show = watchData.shows.find(show => (show.mediaId || show.id) === contentId);
+      const show = watchData.shows.find(show => Number(show.mediaId || show.id) === Number(contentId));
       if (show) {
         // Attach episode progress if available
-        const progress = episodeProgress.find(p => p.showId === contentId);
+        const progress = episodeProgress.find(p => Number(p.showId) === Number(contentId));
         if (progress) {
           return {
             ...show,
@@ -310,7 +310,7 @@ export const WatchDataProvider = ({ children }) => {
 
   // Get watchlist content data
   const getWatchlistContent = (contentId) => {
-    return watchData.watchlist.find(item => (item.mediaId || item.id) === contentId);
+    return watchData.watchlist.find(item => Number(item.mediaId || item.id) === Number(contentId));
   };
 
   // Get total hours watched
