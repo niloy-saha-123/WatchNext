@@ -23,17 +23,17 @@ const getBaseCookieOptions = () => {
   return base;
 };
 
-const setAuthCookies = (res, { accessToken, refreshToken }) => {
+const setAuthCookies = (res, { accessToken, refreshToken }, opts = {}) => {
   const base = getBaseCookieOptions();
 
   res.cookie('accessToken', accessToken, {
     ...base,
-    maxAge: parseDurationMs(config.jwt.accessExpiresIn || '15m'),
+    maxAge: typeof opts.accessMaxAgeMs === 'number' ? opts.accessMaxAgeMs : parseDurationMs(config.jwt.accessExpiresIn || '15m'),
   });
 
   res.cookie('refreshToken', refreshToken, {
     ...base,
-    maxAge: parseDurationMs(config.jwt.refreshExpiresIn || '7d'),
+    maxAge: typeof opts.refreshMaxAgeMs === 'number' ? opts.refreshMaxAgeMs : parseDurationMs(config.jwt.refreshExpiresIn || '7d'),
   });
 };
 

@@ -18,6 +18,7 @@ function LoginPage() {
   });
   
   const [errors, setErrors] = useState({});
+  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const { login, isLoading, isAuthenticated } = useAuth();
@@ -71,7 +72,7 @@ function LoginPage() {
     setErrors({});
 
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await login(formData.email, formData.password, remember);
       
       if (result.success) {
         // Redirect to the page user was trying to access, or dashboard by default
@@ -130,6 +131,8 @@ function LoginPage() {
             <input
               type="checkbox"
               className="h-4 w-4 text-red-600 focus:ring-red-500 border-slate-600 rounded bg-slate-800"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
             />
             <span className="ml-2 text-sm text-slate-300">Remember me</span>
           </label>

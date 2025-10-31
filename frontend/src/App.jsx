@@ -8,6 +8,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { ToastContainer } from './components/common/Toast';
 import { WatchDataProvider } from './contexts/WatchDataContext';
 import { ProtectedRoute, PublicRoute } from './components/routes';
 import HomePage from './pages/HomePage';
@@ -21,13 +23,19 @@ import MyMoviesPage from './pages/MyMoviesPage';
 import MyShowsPage from './pages/MyShowsPage';
 import WatchlistPage from './pages/WatchlistPage';
 import BundlesPage from './pages/BundlesPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import NotFoundPage from './pages/NotFoundPage';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import './index.css';
 
 function App() {
   return (
-    <AuthProvider>
-      <WatchDataProvider>
-        <Router>
+    <ToastProvider>
+      <AuthProvider>
+        <WatchDataProvider>
+          <Router>
+          <ErrorBoundary>
           <Routes>
             {/* Public Routes - Accessible to everyone */}
             <Route path="/" element={<HomePage />} />
@@ -50,6 +58,10 @@ function App() {
               } 
             />
             
+            {/* Static info pages */}
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+
             {/* Protected Routes - Require authentication */}
             <Route 
               path="/dashboard" 
@@ -115,10 +127,15 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            {/* 404 */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </ErrorBoundary>
+          <ToastContainer />
         </Router>
-      </WatchDataProvider>
-    </AuthProvider>
+        </WatchDataProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

@@ -79,7 +79,7 @@ router.post('/register', validateRegistration, async (req, res) => {
       });
     }
 
-    const { name, email, password, birthday, phone } = req.body;
+    const { name, email, password, birthday, phone, remember } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -108,7 +108,8 @@ router.post('/register', validateRegistration, async (req, res) => {
     await user.updateLastLogin();
 
     // Set cookies
-    setAuthCookies(res, { accessToken, refreshToken });
+    const refreshMaxAgeMs = remember ? 30 * 24 * 60 * 60 * 1000 : undefined; // 30 days if remembered
+    setAuthCookies(res, { accessToken, refreshToken }, { refreshMaxAgeMs });
     setCsrfCookie(res);
 
     res.status(201).json({
@@ -148,7 +149,7 @@ router.post('/login', validateLogin, async (req, res) => {
       });
     }
 
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
 
     // Find user and include password for comparison
     const user = await User.findOne({ email }).select('+password');
@@ -183,7 +184,8 @@ router.post('/login', validateLogin, async (req, res) => {
     await user.updateLastLogin();
 
     // Set cookies
-    setAuthCookies(res, { accessToken, refreshToken });
+    const refreshMaxAgeMs = remember ? 30 * 24 * 60 * 60 * 1000 : undefined; // 30 days if remembered
+    setAuthCookies(res, { accessToken, refreshToken }, { refreshMaxAgeMs });
     setCsrfCookie(res);
 
     res.json({

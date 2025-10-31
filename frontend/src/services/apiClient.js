@@ -56,9 +56,15 @@ const apiRequest = async (endpoint, options = {}) => {
           response = await fetch(url, config);
         } else {
           // Refresh failed, surface error for UI to handle
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app:session-expired'));
+          }
           throw new Error('Session expired. Please login again.');
         }
       } catch (refreshError) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('app:session-expired'));
+        }
         throw new Error('Session expired. Please login again.');
       }
     }
@@ -167,7 +173,7 @@ export const authAPI = {
   },
 
   // Login user
-  login: async (email, password) => {
+  login: async (email, password, remember = false) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -175,7 +181,7 @@ export const authAPI = {
           'Content-Type': 'application/json',
         },
         credentials: 'include', // Include cookies
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, remember })
       });
 
       const data = await response.json();
@@ -187,6 +193,9 @@ export const authAPI = {
       // Tokens are now in HttpOnly cookies - no need to store manually
       return data;
     } catch (error) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('app:session-expired'));
+      }
       console.error('Login error:', error);
       throw error;
     }
